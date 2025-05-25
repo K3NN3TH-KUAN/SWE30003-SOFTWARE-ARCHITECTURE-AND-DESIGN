@@ -63,31 +63,185 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html>
-<head><title>Profile</title></head>
+<head>
+    <title>Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
+            min-height: 100vh;
+        }
+        .profile-card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 2px 12px rgba(99,102,241,0.08);
+            margin-top: 3rem;
+            padding: 2rem 2rem 1.5rem 2rem;
+            background: #fff;
+        }
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 2.5rem;
+            margin: 0 auto 1rem auto;
+            background: linear-gradient(135deg, #6366f1 0%, #60a5fa 100%);
+            color: #fff;
+        }
+        .profile-label {
+            font-weight: 500;
+            color: #6366f1;
+        }
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #6366f1;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .identity-preview {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
 <body>
-    <h2>Profile Page</h2>
-    <?php if ($message) echo "<p style='color:green;'>$message</p>"; ?>
-    <p><strong>Account Verify Status:</strong> <?php echo htmlspecialchars($user['accountVerifyStatus']); ?></p>
-    <form method="post">
-        <label>Name:</label><br>
-        <input type="text" name="accountName" value="<?php echo htmlspecialchars($user['accountName']); ?>" required><br>
-        <label>Phone Number:</label><br>
-        <input type="text" name="phoneNumber" value="<?php echo htmlspecialchars($user['phoneNumber']); ?>" required><br>
-        <label>Email:</label><br>
-        <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required><br>
-        <label>New Password (leave blank to keep current):</label><br>
-        <input type="password" name="password"><br>
-        <button type="submit" name="updateProfile">Update Profile</button>
-    </form>
-    <hr>
-    <form method="post" enctype="multipart/form-data">
-        <label>Upload Identity Document:</label><br>
-        <input type="file" name="identityDocument" accept="image/*,application/pdf" required><br>
-        <button type="submit" name="uploadIdentity">Upload Identity</button>
-    </form>
-    <?php if (!empty($user['identityDocument'])): ?>
-        <p>Identity Document Uploaded: <a href="<?php echo htmlspecialchars($user['identityDocument']); ?>" target="_blank">View</a></p>
-    <?php endif; ?>
-    <a href="dashboard.php">Back to Dashboard</a>
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 90vh;">
+        <div class="col-md-8">
+            <div class="profile-card">
+                <div class="text-center mb-4">
+                    <div class="icon-circle">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <h2 class="fw-bold mb-1">My Profile</h2>
+                    <p class="text-muted mb-0">Manage your ART account details</p>
+                </div>
+                <?php if ($message): ?>
+                    <div class="alert alert-<?php echo $identityUploaded ? 'success' : 'info'; ?>"><?php echo $message; ?></div>
+                <?php endif; ?>
+
+                <!-- Profile Info -->
+                <div class="section-title"><i class="bi bi-person-lines-fill"></i> Account Information</div>
+                <form method="post" id="profileForm" class="mb-4">
+                    <div class="row mb-3">
+                        <div class="col-sm-4 profile-label">Name:</div>
+                        <div class="col-sm-8">
+                            <input type="text" name="accountName" class="form-control" value="<?php echo htmlspecialchars($user['accountName']); ?>" required readonly>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 profile-label">Email:</div>
+                        <div class="col-sm-8">
+                            <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($user['email']); ?>" required readonly>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 profile-label">Phone Number:</div>
+                        <div class="col-sm-8">
+                            <input type="text" name="phoneNumber" class="form-control" value="<?php echo htmlspecialchars($user['phoneNumber']); ?>" required readonly>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 profile-label">New Password:</div>
+                        <div class="col-sm-8">
+                            <input type="password" name="password" class="form-control" placeholder="Leave blank to keep current" readonly>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end mb-3" id="profileButtons">
+                        <button type="button" id="editProfileBtn" class="btn btn-warning"><i class="bi bi-pencil"></i> Edit Profile</button>
+                        <button type="submit" name="updateProfile" id="updateProfileBtn" class="btn btn-primary d-none ms-2"><i class="bi bi-save"></i> Update Profile</button>
+                        <button type="button" id="discardChangesBtn" class="btn btn-secondary d-none ms-2">Discard Changes</button>
+                    </div>
+                </form>
+                <script>
+                    const editBtn = document.getElementById('editProfileBtn');
+                    const updateBtn = document.getElementById('updateProfileBtn');
+                    const discardBtn = document.getElementById('discardChangesBtn');
+                    const form = document.getElementById('profileForm');
+                    const inputs = form.querySelectorAll('input');
+
+                    let originalValues = {};
+
+                    editBtn.addEventListener('click', function() {
+                        inputs.forEach(input => {
+                            originalValues[input.name] = input.value;
+                            input.removeAttribute('readonly');
+                        });
+                        editBtn.classList.add('d-none');
+                        updateBtn.classList.remove('d-none');
+                        discardBtn.classList.remove('d-none');
+                    });
+
+                    discardBtn.addEventListener('click', function() {
+                        inputs.forEach(input => {
+                            input.value = originalValues[input.name];
+                            input.setAttribute('readonly', true);
+                        });
+                        editBtn.classList.remove('d-none');
+                        updateBtn.classList.add('d-none');
+                        discardBtn.classList.add('d-none');
+                    });
+
+                    // On submit, keep fields editable (so user can see what they submitted)
+                    form.addEventListener('submit', function() {
+                        inputs.forEach(input => input.removeAttribute('readonly'));
+                    });
+                </script>
+
+                <!-- Identity Verification Section -->
+                <div class="section-title"><i class="bi bi-file-earmark-person"></i> Identity Verification</div>
+                <form method="post" enctype="multipart/form-data" class="mb-4">
+                    <?php if (!empty($user['identityDocument'])): ?>
+                        <div class="mb-3">
+                            <label class="form-label">Uploaded Document:</label><br>
+                            <img src="<?php echo htmlspecialchars($user['identityDocument']); ?>" class="identity-preview" alt="Identity Document">
+                        </div>
+                    <?php endif; ?>
+                    <div class="mb-3">
+                        <label for="identityDocument" class="form-label">Upload Identity Document (PDF, JPG, PNG)</label>
+                        <input type="file" name="identityDocument" id="identityDocument" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" name="uploadIdentity" class="btn btn-success"><i class="bi bi-upload"></i> Upload Document</button>
+                    </div>
+                </form>
+
+                <!-- Account Status -->
+                <div class="section-title"><i class="bi bi-shield-check"></i> Account Status</div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 profile-label">Account Status:</div>
+                    <div class="col-sm-8">
+                        <span class="badge <?php echo $user['accountStatus'] === 'active' ? 'bg-success' : 'bg-danger'; ?>">
+                            <?php echo ucfirst($user['accountStatus']); ?>
+                        </span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 profile-label">Verify Status:</div>
+                    <div class="col-sm-8">
+                        <span class="badge <?php echo $user['accountVerifyStatus'] === 'verified' ? 'bg-success' : 'bg-warning text-dark'; ?>">
+                            <?php echo ucfirst($user['accountVerifyStatus']); ?>
+                        </span>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-sm-4 profile-label">Balance:</div>
+                    <div class="col-sm-8 fw-bold text-success">RM<?php echo number_format($user['accountBalance'], 2); ?></div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <a href="dashboard.php" class="btn btn-outline-primary btn-sm"><i class="bi bi-house"></i> Dashboard</a>
+                    <a href="logout.php" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -37,7 +37,15 @@ class Account {
     public function deactivateAccount() {}
     public function updateAccount() {}
     public function verifyAccount() {}
-    public function updateAccountBalance() {}
+    public function updateAccountBalance($accountID, $newBalance) {
+        require_once __DIR__ . '/Database.php';
+        $database = new Database();
+        $db = $database->getConnection();
+        $sql = "UPDATE account SET accountBalance = ? WHERE accountID = ?";
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([$newBalance, $accountID]);
+    }
+
     public function updateAccountStatus() {}
     public function viewAccountInfo() {}
     public function viewPoints() {}
@@ -94,6 +102,17 @@ class Account {
         $sql = "UPDATE account SET accountVerifyStatus = 'verified' WHERE accountID = ?";
         $stmt = $db->prepare($sql);
         return $stmt->execute([$accountID]);
+    }
+
+    public function getCurrentBalance($accountID) {
+        require_once __DIR__ . '/Database.php';
+        $database = new Database();
+        $db = $database->getConnection();
+        $sql = "SELECT accountBalance FROM account WHERE accountID = ?";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$accountID]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? $result['accountBalance'] : false;
     }
 }
 ?>
