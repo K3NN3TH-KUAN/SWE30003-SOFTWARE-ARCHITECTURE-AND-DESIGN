@@ -492,7 +492,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['proceed_payment'])) {
                 var qty = parseInt(input.value) || 0;
                 if (qty > 0) {
                     var price = parseFloat(input.closest('.merch-card').querySelector('.price-highlight').textContent.replace('RM',''));
-                    merchTotal += qty * price;
+                    var discountedPrice = price * (1 - promoDiscount / 100);
+                    merchTotal += qty * discountedPrice;
                 }
             });
 
@@ -509,16 +510,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['proceed_payment'])) {
                         <span>Seats</span>
                         <span>${seatQty}</span>
                     </li>
-                    ${promoDiscount > 0 ? `
-                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent text-white border-white">
-                        <span>Promotion</span>
-                        <span>${promoDiscount}%</span>
-                    </li>
-                    ` : ''}
                     ${merchTotal > 0 ? `
                     <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent text-white border-white">
                         <span>Merchandise</span>
                         <span>RM${merchTotal.toFixed(2)}</span>
+                    </li>
+                    ` : ''}
+                    ${promoDiscount > 0 ? `
+                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent text-white border-white">
+                        <span>Promotion</span>
+                        <span>${promoDiscount}%</span>
                     </li>
                     ` : ''}
                     <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent text-white border-white fw-bold">

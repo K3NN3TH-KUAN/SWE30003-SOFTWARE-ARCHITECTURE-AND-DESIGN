@@ -10,32 +10,50 @@ class Sale {
     public $totalAmountPay;
     public $saleStatus;
 
-    public function initiateNewSale($accountID, $totalAmount, $lineOfSaleQuantity, $lineOfSaleAmount, $promotionID = null, $redemptionID = null) {
+    public function initiateNewSale($accountID, $lineOfSaleAmount, $lineOfSaleQuantity, $totalAmountPay, $promotionID = null, $redemptionID = null) {
         require_once __DIR__ . '/Database.php';
         $database = new Database();
         $db = $database->getConnection();
+        
         try {
-            $db->beginTransaction(); // Start transaction
+            // Debug log
+            error_log("Creating sale with params: " . print_r([
+                'accountID' => $accountID,
+                'lineOfSaleAmount' => $lineOfSaleAmount,
+                'lineOfSaleQuantity' => $lineOfSaleQuantity,
+                'totalAmountPay' => $totalAmountPay,
+                'promotionID' => $promotionID,
+                'redemptionID' => $redemptionID
+            ], true));
 
             $sql = "INSERT INTO sale (accountID, promotionID, redemptionID, saleDate, saleTime, lineOfSaleQuantity, lineOfSaleAmount, totalAmountPay, saleStatus) 
                     VALUES (?, ?, ?, CURDATE(), CURTIME(), ?, ?, ?, 'Completed')";
             
             $stmt = $db->prepare($sql);
-            $stmt->execute([
+            
+            // Convert null values to actual NULL for the database
+            $promotionID = $promotionID === '' ? null : $promotionID;
+            $redemptionID = $redemptionID === '' ? null : $redemptionID;
+            
+            $result = $stmt->execute([
                 $accountID,
                 $promotionID,
                 $redemptionID,
                 $lineOfSaleQuantity,
                 $lineOfSaleAmount,
-                $totalAmount
+                $totalAmountPay
             ]);
             
-            $saleID = $db->lastInsertId();
+            if ($result) {
+                $saleID = $db->lastInsertId();
+                error_log("Sale created successfully with ID: " . $saleID);
+                return $saleID;
+            }
             
-            $db->commit(); // Commit transaction
-            return $saleID;
+            error_log("Failed to create sale: " . print_r($stmt->errorInfo(), true));
+            return false;
+            
         } catch (PDOException $e) {
-            $db->rollBack(); // Rollback on error
             error_log("Error in initiateNewSale: " . $e->getMessage());
             return false;
         }
@@ -45,13 +63,18 @@ class Sale {
         require_once __DIR__ . '/Database.php';
         require_once __DIR__ . '/LineOfSale.php';
         require_once __DIR__ . '/Account.php';
+        require_once __DIR__ . '/Promotion.php';
         $database = new Database();
         $db = $database->getConnection();
 
-        // Get sale details
-        $sql = "SELECT s.*, a.accountName, a.email 
+        // Get sale details with promotion info
+        $sql = "SELECT s.*, a.accountName, a.email, 
+                p.discountRate as promotion_discount_rate,
+                pr.redemptionID
                 FROM sale s 
                 JOIN account a ON s.accountID = a.accountID 
+                LEFT JOIN promotion p ON s.promotionID = p.promotionID
+                LEFT JOIN point_redemption pr ON s.redemptionID = pr.redemptionID
                 WHERE s.saleID = ?";
         $stmt = $db->prepare($sql);
         $stmt->execute([$saleID]);
@@ -64,6 +87,11 @@ class Sale {
         // Get line of sale items
         $lineOfSale = new LineOfSale();
         $items = $lineOfSale->getLineOfSaleBySaleID($saleID);
+
+        // Calculate discount information
+        $originalTotal = $sale['lineOfSaleAmount'];
+        $discountRate = $sale['promotion_discount_rate'] ?? 0;
+        $discountAmount = $originalTotal - $sale['totalAmountPay'];
 
         // Build receipt HTML
         ob_start();
@@ -91,7 +119,6 @@ class Sale {
                 <?php foreach ($items as $item): ?>
                     <tr>
                         <td style="padding:8px;"><?php
-                            // Try to get merchandise name if type is Merchandise
                             if ($item['type'] === 'Merchandise' && !empty($item['merchandiseID'])) {
                                 $merchandiseStmt = $db->prepare("SELECT merchandiseName FROM merchandise WHERE merchandiseID = ?");
                                 $merchandiseStmt->execute([$item['merchandiseID']]);
@@ -103,22 +130,20 @@ class Sale {
                         ?></td>
                         <td style="padding:8px;"><?php echo htmlspecialchars($item['type']); ?></td>
                         <td style="padding:8px;text-align:center;"><?php echo htmlspecialchars($item['itemQuantity']); ?></td>
-                        <td style="padding:8px;">
-                            RM<?php echo number_format($item['itemAmount'], 2); ?>
-                        </td>
-                        <td style="padding:8px;">
-                            RM<?php
-                                // Use the calculateTotalAmount method
-                                $subtotal = $lineOfSale->calculateTotalAmount($item['itemQuantity'], $item['itemAmount']);
-                                echo number_format($subtotal, 2);
-                            ?>
-                        </td>
+                        <td style="padding:8px;">RM<?php echo number_format($item['itemAmount'], 2); ?></td>
+                        <td style="padding:8px;">RM<?php echo number_format($item['totalAmountPerLineOfSale'], 2); ?></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>
             </table>
             <hr>
             <div style="text-align:right;">
+                <?php if ($discountRate > 0): ?>
+                    <div style="margin-bottom:8px;">
+                        <strong>Subtotal:</strong> RM<?php echo number_format($originalTotal, 2); ?><br>
+                        <strong style="color:#16a34a;">Discount (<?php echo $discountRate; ?>%):</strong> -RM<?php echo number_format($discountAmount, 2); ?>
+                    </div>
+                <?php endif; ?>
                 <strong>Total Paid: RM<?php echo number_format($sale['totalAmountPay'], 2); ?></strong>
             </div>
             <div style="text-align:right;color:#16a34a;">

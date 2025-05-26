@@ -109,5 +109,22 @@ class PointRedemption {
             return false;
         }
     }
+
+    public function markAsUsed($redemptionID) {
+        $db = (new Database())->getConnection();
+        $stmt = $db->prepare("UPDATE point_redemption SET isUsed = 1 WHERE redemptionID = ?");
+        return $stmt->execute([$redemptionID]);
+    }
+
+    public function getRedemptionByID($redemptionID) {
+        require_once __DIR__ . '/Database.php';
+        $database = new Database();
+        $db = $database->getConnection();
+
+        $sql = "SELECT * FROM point_redemption WHERE redemptionID = ?";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$redemptionID]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }
 ?> 

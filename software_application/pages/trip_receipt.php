@@ -8,6 +8,7 @@ require_once '../classes/Merchandise.php';
 require_once '../classes/Account.php';
 require_once '../classes/Notification.php';
 require_once '../classes/Point.php';
+require_once '../classes/PointRedemption.php';
 
 if (!isset($_SESSION['accountID'])) {
     header('Location: login.php');
@@ -53,6 +54,34 @@ $trip = new Trip();
 $tripDetails = $trip->getTripByID($tripID);
 $account = new Account();
 $accountInfo = $account->getAccountByID($accountID);
+
+$promotion = new Promotion();
+$pointRedemption = new PointRedemption();
+
+$discountRate = 0;
+$discountLabel = '';
+$discountAmount = 0;
+
+if (!empty($saleDetails['redemptionID'])) {
+    $voucher = $pointRedemption->getRedemptionByID($saleDetails['redemptionID']);
+    if ($voucher && $voucher['itemType'] === 'Voucher' && isset($voucher['itemID'])) {
+        $promo = $promotion->getPromotionByID($voucher['itemID']);
+        if ($promo) {
+            $discountRate = $promo['discountRate'];
+            $discountLabel = 'Voucher (' . $discountRate . '%)';
+        }
+    }
+} elseif (!empty($saleDetails['promotionID'])) {
+    $promo = $promotion->getPromotionByID($saleDetails['promotionID']);
+    if ($promo) {
+        $discountRate = $promo['discountRate'];
+        $discountLabel = 'Promotion (' . $discountRate . '%)';
+    }
+}
+
+$subtotal = $saleDetails['lineOfSaleAmount'];
+$discountAmount = $discountRate > 0 ? ($subtotal * $discountRate / 100) : 0;
+$totalPaid = $saleDetails['totalAmountPay'];
 
 // Set variables for the receipt view
 $bookingDateTime = $saleDetails['saleDate'] . ' ' . $saleDetails['saleTime'];
@@ -131,18 +160,24 @@ $qrImagePath = "../assets/images/qrcode.png";
                     }
                 }
                 ?>
+                <tr>
+                    <td colspan="4" class="text-end"><strong>Subtotal:</strong></td>
+                    <td>RM<?php echo number_format($subtotal, 2); ?></td>
+                </tr>
+                <?php if ($discountRate > 0): ?>
+                <tr>
+                    <td colspan="4" class="text-end">
+                        <strong>Discount<?php echo $discountLabel ? " ({$discountLabel})" : ""; ?>:</strong>
+                    </td>
+                    <td class="text-danger">-RM<?php echo number_format($discountAmount, 2); ?></td>
+                </tr>
+                <?php endif; ?>
+                <tr>
+                    <td colspan="4" class="text-end"><strong>Total Paid:</strong></td>
+                    <td class="text-success">RM<?php echo number_format($totalPaid, 2); ?></td>
+                </tr>
             </tbody>
         </table>
-    </div>
-
-    <hr>
-    <div class="d-flex justify-content-between align-items-center mt-3">
-        <div>
-            <b>Total Paid:</b> <span class="text-success fs-5">RM<?php echo number_format($saleDetails['totalAmountPay'], 2); ?></span>
-        </div>
-        <div>
-            <b>Status:</b> <span class="text-success">Completed</span>
-        </div>
     </div>
 
     <hr>

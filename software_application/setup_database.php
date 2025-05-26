@@ -199,7 +199,7 @@ $table_sql = [
         saleID INT,
         tripID INT,
         accountID INT,
-        bookingStatus ENUM('Confirmed', 'Rescheduled', 'Cancelled'),
+        bookingStatus ENUM('Booked', 'Rescheduled', 'Cancelled'),
         originalTripID INT,
         rescheduledTripID INT,
         bookingDate DATETIME,
@@ -345,7 +345,14 @@ $dummyPromotions = [
         'expireDate' => '2026-09-30',
         'promotionQuantity' => 10,
         'promotionType' => 'Promotion'
-    ]
+    ],
+    [
+        'discountRate' => 35,
+        'startDate' => '2024-03-01',
+        'expireDate' => '2026-10-30',
+        'promotionQuantity' => 10,
+        'promotionType' => 'Voucher'
+    ],
 ];
 
 // Insert dummy promotions
