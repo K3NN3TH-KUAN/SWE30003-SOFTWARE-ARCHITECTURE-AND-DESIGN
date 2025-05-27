@@ -19,5 +19,6 @@
     <div class="card"><a href="merchandise.php">Merchandise</a></div>
     <div class="card"><a href="profile.php">Profile Page</a></div>
     <div class="card"><a href="logout.php">Logout</a></div>
+    <div class="card"><a href="feedback.php">Feedback Form</a></div>
 </body>
 </html>
