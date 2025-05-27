@@ -493,5 +493,5 @@ foreach ($dummyTrips as $trip) {
 }
 
 $conn->close();
-echo "Setup complete.";
+echo "Setup complete.";
 ?>

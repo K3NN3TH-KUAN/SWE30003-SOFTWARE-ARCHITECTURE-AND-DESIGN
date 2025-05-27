@@ -1,60 +1,163 @@
 <?php
-require_once '../classes/Feedback.php';
-require_once '../classes/Notification.php';
-require_once '../classes/Database.php';
 session_start();
+require_once '../classes/Database.php';
 
-// Assume only admin can access this page (add your admin auth check here)
+// Admin authentication can be added here
 
 $database = new Database();
 $db = $database->getConnection();
 
-// Fetch feedback records
-$stmt = $db->query("SELECT f.feedbackID, f.accountID, a.accountName, f.message, f.rating, f.created_at
-                    FROM feedback f
-                    JOIN account a ON f.accountID = a.accountID
-                    WHERE f.status = 'active'
-                    ORDER BY f.created_at DESC");
-
-$feedbackList = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+// Handle status update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['feedbackID'])) {
     $feedbackID = $_POST['feedbackID'];
-
-    if (isset($_POST['archive'])) {
-        $db->prepare("UPDATE feedback SET status = 'archived' WHERE feedbackID = ?")->execute([$feedbackID]);
-    } elseif (isset($_POST['delete'])) {
-        $db->prepare("DELETE FROM feedback WHERE feedbackID = ?")->execute([$feedbackID]);
+    if (isset($_POST['resolve'])) {
+        $stmt = $db->prepare('UPDATE feedback SET feedbackStatus = ? WHERE feedbackID = ?');
+        $stmt->execute(['resolved', $feedbackID]);
     }
-    
-    header("Location: admin_review_feedback.php");
-    exit;
+    header('Location: views_feedback.php');
+    exit();
 }
+
+// Fetch all feedback with user info
+$stmt = $db->query('SELECT f.feedbackID, f.accountID, a.accountName, f.rating, f.comment, f.feedbackStatus FROM feedback f JOIN account a ON f.accountID = a.accountID ORDER BY f.feedbackID DESC');
+$feedbackList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Feedback Form</title>
+    <title>Admin - View Feedback</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
+            min-height: 100vh;
+        }
+        .navbar-custom {
+            background: #6366f1;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #fff !important;
+            letter-spacing: 1px;
+        }
+        .nav-link {
+            color: #fff !important;
+            font-size: 1.3rem;
+        }
+        .feedback-table-card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 2px 12px rgba(99,102,241,0.08);
+            margin-top: 2rem;
+            padding: 2rem 2rem 1.5rem 2rem;
+            background: #fff;
+            max-width: 1100px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .table thead th {
+            background: #6366f1;
+            color: #fff;
+            font-weight: 600;
+        }
+        .status-badge {
+            font-size: 1rem;
+            padding: 0.4em 1em;
+            border-radius: 0.5em;
+        }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-resolved {
+            background: #d4edda;
+            color: #155724;
+        }
+        .btn-resolve {
+            background: linear-gradient(135deg, #22d3ee 0%, #4ade80 100%);
+            color: #fff;
+            font-weight: bold;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.4rem 1.2rem;
+            transition: background 0.2s;
+        }
+        .btn-resolve:hover {
+            background: linear-gradient(135deg, #0ea5e9 0%, #22d3ee 100%);
+            color: #fff;
+        }
+    </style>
 </head>
 <body>
-    <h2>Feedback Submitted by Users</h2>
-
-    <?php if (count($feedbackList) === 0): ?>
-        <p>No feedback submitted.</p>
-    <?php else: ?>
-        <?php foreach ($feedbackList as $fb): ?>
-            <div style="border:1px solid #ccc; margin:10px; padding:10px;">
-                <p><strong>User:</strong> <?=htmlspecialchars($fb['accountName'])?> (ID: <?=$fb['accountID']?>)</p>
-                <p><strong>Rating:</strong> <?=htmlspecialchars($fb['rating'])?> / 5</p>
-                <p><strong>Message:</strong> <?=nl2br(htmlspecialchars($fb['message']))?></p>
-                <p><strong>Submitted At:</strong> <?=$fb['created_at']?></p>
-                <form method="post">
-                    <input type="hidden" name="feedbackID" value="<?=$fb['feedbackID']?>">
-                    <button type="submit" name="archive">Archive</button>
-                    <button type="submit" name="delete" onclick="return confirm('Are you sure you want to delete this feedback?');">Delete</button>
-                </form>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="admin_dashboard.php">
+                <img src="../assets/images/logo.png" alt="ART Logo" style="height:32px;vertical-align:middle;margin-right:8px;">
+                ART Admin
+            </a>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="mb-3">
+            <a href="admin_dashboard.php" class="btn btn-outline-primary"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
+        </div>
+        <div class="feedback-table-card">
+            <h2 class="fw-bold mb-4 text-center"><i class="bi bi-chat-dots"></i> User Feedback</h2>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Rating</th>
+                            <th scope="col">Comment</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (count($feedbackList) === 0): ?>
+                            <tr><td colspan="6" class="text-center text-muted">No feedback found.</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($feedbackList as $idx => $fb): ?>
+                                <tr>
+                                    <th scope="row"><?php echo $idx + 1; ?></th>
+                                    <td><?php echo htmlspecialchars($fb['accountName']); ?> (ID: <?php echo $fb['accountID']; ?>)</td>
+                                    <td>
+                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <?php if ($i <= $fb['rating']): ?>
+                                                <i class="bi bi-star-fill" style="color:#ffc107;"></i>
+                                            <?php else: ?>
+                                                <i class="bi bi-star" style="color:#222;"></i>
+                                            <?php endif; ?>
+                                        <?php endfor; ?>
+                                    </td>
+                                    <td><?php echo nl2br(htmlspecialchars($fb['comment'])); ?></td>
+                                    <td>
+                                        <span class="status-badge <?php echo $fb['feedbackStatus'] === 'resolved' ? 'status-resolved' : 'status-pending'; ?>">
+                                            <?php echo ucfirst($fb['feedbackStatus']); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <?php if ($fb['feedbackStatus'] === 'pending'): ?>
+                                            <form method="post" style="display:inline;">
+                                                <input type="hidden" name="feedbackID" value="<?php echo $fb['feedbackID']; ?>">
+                                                <button type="submit" name="resolve" class="btn btn-resolve btn-sm"><i class="bi bi-check-circle"></i> Mark as Resolved</button>
+                                            </form>
+                                        <?php else: ?>
+                                            <span class="text-success"><i class="bi bi-check2-circle"></i> Resolved</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
-        <?php endforeach; ?>
-    <?php endif; ?>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
