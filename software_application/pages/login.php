@@ -1,30 +1,106 @@
 <?php
 require_once '../classes/Account.php';
-$message = "";
 session_start();
+$message = "";
+
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header('Location: login.php');
+    exit();
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $account = new Account();
-    $user = $account->login($_POST['loginInput'], $_POST['password']);
+    $loginInput = $_POST['loginInput'];
+    $password = $_POST['password'];
+    $user = $account->login($loginInput, $password);
     if ($user) {
         $_SESSION['user'] = $user;
-        header("Location: dashboard.php");
-        exit;
+        $_SESSION['accountID'] = $user['accountID'];
+        $_SESSION['accountName'] = $user['accountName'];
+        header('Location: dashboard.php');
+        exit();
     } else {
-        $message = "Invalid credentials or inactive account.";
+        $message = "Invalid login credentials";
     }
 }
 ?>
 <!DOCTYPE html>
 <html>
-<head><title>Login</title></head>
+<head>
+    <title>Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
+            min-height: 100vh;
+        }
+        .login-card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 2px 12px rgba(99,102,241,0.08);
+            margin-top: 5rem;
+            padding: 2rem 2rem 1.5rem 2rem;
+            background: #fff;
+        }
+        .icon-circle {
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 2.5rem;
+            margin: 0 auto 1rem auto;
+            background: linear-gradient(135deg, #6366f1 0%, #60a5fa 100%);
+            color: #fff;
+        }
+        .signup-link {
+            color: #6366f1;
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .signup-link:hover {
+            text-decoration: underline;
+            color: #4338ca;
+        }
+    </style>
+</head>
 <body>
-    <h2>Login</h2>
-    <?php if ($message) echo "<p style='color:red;'>$message</p>"; ?>
-    <form method="post">
-        <input type="text" name="loginInput" placeholder="Email, Name, or Phone Number" required><br>
-        <input type="password" name="password" placeholder="Password" required><br>
-        <button type="submit">Login</button>
-    </form>
-    <a href="register.php">Don't have an account? Register</a>
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 90vh;">
+        <div class="col-md-5">
+            <div class="login-card">
+                <div class="text-center mb-4">
+                    <div class="icon-circle">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <h2 class="fw-bold mb-1">Login</h2>
+                    <p class="text-muted mb-0">Sign in to your ART account</p>
+                </div>
+                <?php if ($message): ?>
+                    <div class="alert alert-danger"><?php echo $message; ?></div>
+                <?php endif; ?>
+                <form method="post" class="mb-3">
+                    <div class="mb-3">
+                        <label for="loginInput" class="form-label">Email, Name, or Phone Number</label>
+                        <input type="text" name="loginInput" id="loginInput" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" name="password" id="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </button>
+                </form>
+                <div class="text-center mt-3">
+                    <span>Doesn't have an account? </span>
+                    <a href="register.php" class="signup-link">Sign up</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
