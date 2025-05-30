@@ -100,11 +100,13 @@ $feedbackList = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </nav>
     <div class="container">
-        <div class="mb-3">
-            <a href="admin_dashboard.php" class="btn btn-outline-primary"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
+        <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
+            <h2 class="fw-bold mb-0"><i class="bi bi-chat-dots"></i> User Feedback</h2>
+            <a href="admin_dashboard.php" class="btn btn-secondary">
+                <i class="bi bi-house"></i> Back to Dashboard
+            </a>
         </div>
         <div class="feedback-table-card">
-            <h2 class="fw-bold mb-4 text-center"><i class="bi bi-chat-dots"></i> User Feedback</h2>
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead>
