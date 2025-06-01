@@ -361,9 +361,7 @@ class Trip {
         $db = $database->getConnection();
 
         try {
-            $db->beginTransaction();
-
-            // Fetch booking details
+            // Fetch booking details before starting transaction
             $booking = $this->getBookingDetails($bookingID);
             if (!$booking) {
                 throw new Exception("Booking not found: $bookingID");
@@ -376,7 +374,7 @@ class Trip {
             $saleID = $booking['saleID'];
             $tripID = $booking['tripID'];
 
-            // Fetch sale/account
+            // Fetch sale/account info before transaction
             $saleStmt = $db->prepare("SELECT * FROM sale WHERE saleID = ?");
             $saleStmt->execute([$saleID]);
             $sale = $saleStmt->fetch(PDO::FETCH_ASSOC);
@@ -385,57 +383,21 @@ class Trip {
             }
             $accountID = $sale['accountID'];
 
+            // Calculate refund amount before transaction
+            $refundAmount = 0;
+            
             // 1. Try to get the exact amount paid for the trip from line_of_sale
             $tripLineStmt = $db->prepare("SELECT totalAmountPerLineOfSale FROM line_of_sale WHERE saleID = ? AND tripID = ? AND type = 'Trip' LIMIT 1");
             $tripLineStmt->execute([$saleID, $tripID]);
             $tripLine = $tripLineStmt->fetch(PDO::FETCH_ASSOC);
             $refundAmount = $tripLine ? floatval($tripLine['totalAmountPerLineOfSale']) : 0;
-            error_log("DEBUG: saleID=$saleID, tripID=$tripID, refundAmount(from line_of_sale)=$refundAmount");
 
-            // 2. Fallback: If not found, try to reconstruct the paid amount using sale and promotion info
-            if ($refundAmount <= 0) {
-                $tripDetails = $this->getTripByID($tripID);
-                $seats = $this->getTripSeatsForSale($db, $saleID, $tripID);
-                $discountRate = 0;
-                // Check for promotion or voucher
-                if (!empty($sale['redemptionID'])) {
-                    // Voucher
-                    $voucherStmt = $db->prepare("SELECT * FROM point_redemption WHERE redemptionID = ?");
-                    $voucherStmt->execute([$sale['redemptionID']]);
-                    $voucher = $voucherStmt->fetch(PDO::FETCH_ASSOC);
-                    if ($voucher && $voucher['itemType'] === 'Voucher') {
-                        $promoStmt = $db->prepare("SELECT * FROM promotion WHERE promotionID = ?");
-                        $promoStmt->execute([$voucher['itemID']]);
-                        $promo = $promoStmt->fetch(PDO::FETCH_ASSOC);
-                        if ($promo) {
-                            $discountRate = floatval($promo['discountRate']);
-                        }
-                    }
-                } elseif (!empty($sale['promotionID'])) {
-                    // Promotion
-                    $promoStmt = $db->prepare("SELECT * FROM promotion WHERE promotionID = ?");
-                    $promoStmt->execute([$sale['promotionID']]);
-                    $promo = $promoStmt->fetch(PDO::FETCH_ASSOC);
-                    if ($promo) {
-                        $discountRate = floatval($promo['discountRate']);
-                    }
-                }
-                $tripPrice = $tripDetails ? floatval($tripDetails['totalAmount']) : 0;
-                $discountedTripPrice = $tripPrice;
-                if ($discountRate > 0) {
-                    $discountedTripPrice = $tripPrice * (1 - $discountRate / 100);
-                }
-                $refundAmount = $discountedTripPrice * $seats;
-                error_log("DEBUG: Fallback refundAmount = discountedTripPrice($discountedTripPrice) * seats($seats) = $refundAmount");
-            }
-
-            // 3. Final fallback: If still not found, use the sale's totalAmountPay if this was a trip-only sale
+            // 2. Fallback: If not found, use the sale's totalAmountPay if this was a trip-only sale
             if ($refundAmount <= 0 && floatval($sale['lineOfSaleQuantity']) == 1) {
                 $refundAmount = floatval($sale['totalAmountPay']);
-                error_log("DEBUG: Final fallback refundAmount = sale totalAmountPay = $refundAmount");
             }
 
-            // 4. Never refund more than was paid for the sale
+            // 3. Never refund more than was paid for the sale
             if ($refundAmount > floatval($sale['totalAmountPay'])) {
                 $refundAmount = floatval($sale['totalAmountPay']);
             }
@@ -444,7 +406,13 @@ class Trip {
                 throw new Exception("Refund amount is zero or negative. Please check line_of_sale data and trip price.");
             }
 
-            // Update booking status and refund info in one query
+            // Get seats booked before transaction
+            $seatsBooked = $this->getTripSeatsForSale($db, $saleID, $tripID);
+
+            // Start transaction for critical updates only
+            $db->beginTransaction();
+
+            // 1. Update booking status
             $updateBooking = $db->prepare(
                 "UPDATE trip_booking 
                  SET bookingStatus = 'Cancelled', 
@@ -455,16 +423,17 @@ class Trip {
             );
             $updateBooking->execute([$refundAmount, $bookingID]);
 
-            // Release seats
-            $seatsBooked = $this->getTripSeatsForSale($db, $saleID, $tripID);
+            // 2. Release seats
             $updateSeats = $db->prepare("UPDATE trip SET availableSeats = availableSeats + ? WHERE tripID = ?");
             $updateSeats->execute([$seatsBooked, $tripID]);
 
-            // Refund amount to account balance
+            // 3. Refund amount to account balance
             $updateAccount = $db->prepare("UPDATE account SET accountBalance = accountBalance + ? WHERE accountID = ?");
             $updateAccount->execute([$refundAmount, $accountID]);
 
-            // Create notification
+            $db->commit();
+
+            // Create notification after transaction is committed
             $notification = new Notification();
             $notification->createNotification(
                 $accountID,
@@ -472,10 +441,11 @@ class Trip {
                 'booking'
             );
 
-            $db->commit();
             return true;
         } catch (Exception $e) {
-            $db->rollBack();
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
             error_log("CANCEL BOOKING ERROR: " . $e->getMessage());
             return $e->getMessage();
         }
