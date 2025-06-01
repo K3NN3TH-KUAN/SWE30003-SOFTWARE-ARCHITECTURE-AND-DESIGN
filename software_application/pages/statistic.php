@@ -8,66 +8,6 @@ require_once '../classes/Database.php';
 $database = new Database();
 $db = $database->getConnection();
 
-// Add at the top after DB connection and before statistics calculation
-if (isset($_POST['generate_report'])) {
-    $statDate = $_POST['stat_date'];
-    $adminID = $_SESSION['adminID'] ?? null;
-    // Get all trips on the selected date
-    $tripsStmt = $db->prepare("SELECT * FROM trip WHERE tripDate = ?");
-    $tripsStmt->execute([$statDate]);
-    $trips = $tripsStmt->fetchAll(PDO::FETCH_ASSOC);
-    $routeStats = [];
-    foreach ($trips as $trip) {
-        $routeKey = $trip['origin'] . " → " . $trip['destination'];
-        $passengerStmt = $db->prepare("
-            SELECT SUM(los.itemQuantity) as totalPassengers
-            FROM line_of_sale los
-            WHERE los.tripID = ?
-        ");
-        $passengerStmt->execute([$trip['tripID']]);
-        $passengerRow = $passengerStmt->fetch(PDO::FETCH_ASSOC);
-        $tripPassengers = $passengerRow['totalPassengers'] ?? 0;
-        $cancelStmt = $db->prepare("
-            SELECT COUNT(*) as totalCancellations
-            FROM trip_booking
-            WHERE tripID = ? AND bookingStatus = 'Cancelled'
-        ");
-        $cancelStmt->execute([$trip['tripID']]);
-        $cancelRow = $cancelStmt->fetch(PDO::FETCH_ASSOC);
-        $tripCancellations = $cancelRow['totalCancellations'] ?? 0;
-        if (!isset($routeStats[$routeKey])) {
-            $routeStats[$routeKey] = [
-                'route' => $routeKey,
-                'totalPassengers' => 0,
-                'totalCancellations' => 0
-            ];
-        }
-        $routeStats[$routeKey]['totalPassengers'] += $tripPassengers;
-        $routeStats[$routeKey]['totalCancellations'] += $tripCancellations;
-    }
-    // Find most and least popular
-    $mostPopular = null;
-    $leastPopular = null;
-    foreach ($routeStats as $route => $data) {
-        if ($mostPopular === null || $data['totalPassengers'] > $routeStats[$mostPopular]['totalPassengers']) {
-            $mostPopular = $route;
-        }
-        if ($leastPopular === null || $data['totalPassengers'] < $routeStats[$leastPopular]['totalPassengers']) {
-            $leastPopular = $route;
-        }
-    }
-    $insertStmt = $db->prepare("INSERT INTO statistic (adminID, reportType, route, statDate, totalPassengers, totalCancellations) VALUES (?, ?, ?, ?, ?, ?)");
-    if ($mostPopular !== null) {
-        $data = $routeStats[$mostPopular];
-        $insertStmt->execute([$adminID, 'most_popular', $mostPopular, $statDate, $data['totalPassengers'], $data['totalCancellations']]);
-    }
-    if ($leastPopular !== null && $leastPopular !== $mostPopular) {
-        $data = $routeStats[$leastPopular];
-        $insertStmt->execute([$adminID, 'least_popular', $leastPopular, $statDate, $data['totalPassengers'], $data['totalCancellations']]);
-    }
-    $reportSuccess = true;
-}
-
 // 1. Get all trips
 $tripsStmt = $db->prepare("SELECT * FROM trip");
 $tripsStmt->execute();
@@ -158,22 +98,6 @@ foreach ($routeStats as $route => $data) {
         <a href="admin_dashboard.php" class="btn btn-secondary">
             <i class="bi bi-house"></i> Back to Dashboard
         </a>
-    </div>
-    <?php if (isset($reportSuccess) && $reportSuccess): ?>
-        <div class="alert alert-success">Statistical report generated and saved successfully!</div>
-    <?php endif; ?>
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="post" class="row g-3 align-items-end">
-                <div class="col-auto">
-                    <label for="stat_date" class="form-label mb-0">Date</label>
-                    <input type="date" class="form-control" name="stat_date" id="stat_date" required>
-                </div>
-                <div class="col-auto">
-                    <button type="submit" name="generate_report" class="btn btn-primary">Generate Statistical Report</button>
-                </div>
-            </form>
-        </div>
     </div>
     <div class="mb-3">
         <span class="highlight">Most Popular Route:</span>

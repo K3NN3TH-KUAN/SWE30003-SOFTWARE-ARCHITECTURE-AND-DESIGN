@@ -137,15 +137,6 @@ $adminName = $_SESSION['adminName'] ?? 'Admin';
                     </div>
                 </a>
             </div>
-            <div class="col-12 col-md-6 col-lg-3">
-                <a href="statistic_report.php" class="dashboard-link">
-                    <div class="dashboard-card p-4 text-center h-100">
-                        <div class="dashboard-icon"><i class="bi bi-clipboard-data"></i></div>
-                        <div class="dashboard-title">Statistical Reports</div>
-                        <div class="text-muted small">View weekly historical reports</div>
-                    </div>
-                </a>
-            </div>
         </div>
         <div class="text-center mt-5">
             <a href="logout.php" class="btn btn-outline-danger btn-lg">
