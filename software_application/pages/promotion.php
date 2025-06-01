@@ -77,12 +77,12 @@ $redeemedVouchers = $promotion->getRedeemedVouchers($accountID);
 </head>
 <body>
     <div class="container py-5">
-        <!-- Back to Dashboard Button -->
-        <a href="dashboard.php" class="btn btn-dashboard">
-            <i class="bi bi-house-door"></i> Back to Dashboard
-        </a>
-
-        <h2 class="mb-4 text-center"><i class="bi bi-tag"></i> Promotions & Vouchers</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-4 fw-bold"><i class="bi bi-tag"></i> Promotions & Vouchers</h2>
+            <a href="dashboard.php" class="btn btn-outline-primary me-2">
+                <i class="bi bi-house-door"></i> Dashboard
+            </a>
+        </div>
 
         <!-- Available Promotions Section -->
         <h4 class="mb-4 text-center">Available Promotions</h4>

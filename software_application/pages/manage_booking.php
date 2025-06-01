@@ -12,23 +12,40 @@ $database = new Database();
 $db = $database->getConnection();
 $message = "";
 
+// Get filter value from GET or default to ''
+$filterStatus = isset($_GET['bookingStatus']) ? $_GET['bookingStatus'] : '';
+
 // Handle Refund
 if (isset($_POST['refund_booking'])) {
     $bookingID = $_POST['bookingID'];
-    // Example: update booking status and mark as refunded (adjust as per your schema)
     $stmt = $db->prepare("UPDATE trip_booking SET bookingStatus='Cancelled' WHERE bookingID=?");
     $stmt->execute([$bookingID]);
-    // You may want to update sale/payment/refund tables as well
     $message = "Refund processed for booking ID $bookingID!";
 }
 
-// Fetch all bookings (adjust query as per your schema)
-$stmt = $db->query("SELECT b.*, t.origin, t.destination, t.tripDate, t.tripTime, t.tripStatus, a.accountName, a.email
-    FROM trip_booking b
-    JOIN trip t ON b.tripID = t.tripID
-    JOIN account a ON b.accountID = a.accountID
-    ORDER BY b.bookingID DESC");
-$bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Fetch all bookings with joined tables
+if ($filterStatus) {
+    $stmt = $db->prepare("
+        SELECT b.*, a.accountName, a.email, t.origin, t.destination, t.tripDate, t.tripTime 
+        FROM trip_booking b
+        JOIN account a ON b.accountID = a.accountID
+        JOIN trip t ON b.tripID = t.tripID
+        WHERE b.bookingStatus = :status
+        ORDER BY b.bookingDate DESC
+    ");
+    $stmt->bindParam(':status', $filterStatus);
+    $stmt->execute();
+    $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $stmt = $db->query("
+        SELECT b.*, a.accountName, a.email, t.origin, t.destination, t.tripDate, t.tripTime 
+        FROM trip_booking b
+        JOIN account a ON b.accountID = a.accountID
+        JOIN trip t ON b.tripID = t.tripID
+        ORDER BY b.bookingDate DESC
+    ");
+    $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 ?>
 
 <!DOCTYPE html>
@@ -75,6 +92,25 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <a href="admin_dashboard.php" class="btn btn-outline-primary">
                 <i class="bi bi-house-door"></i> Dashboard
             </a>
+        </div>
+
+        <!-- Moved filter form here, under the heading -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="get" class="d-flex align-items-center gap-3">
+                    <div class="input-group" style="max-width: 300px;">
+                        <select name="bookingStatus" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option value="Booked" <?= $filterStatus == 'Booked' ? 'selected' : '' ?>>Booked</option>
+                            <option value="Rescheduled" <?= $filterStatus == 'Rescheduled' ? 'selected' : '' ?>>Rescheduled</option>
+                            <option value="Cancelled" <?= $filterStatus == 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                        </select>
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <?php if ($message): ?>

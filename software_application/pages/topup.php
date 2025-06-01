@@ -123,11 +123,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <button type="submit" class="btn btn-success w-100 fw-bold">
                         <i class="bi bi-plus-circle me-1"></i> Top Up Now
                     </button>
+                    <a href="dashboard.php" class="btn btn-outline-primary me-2 w-100 mt-3 fw-bold">
+                        <i class="bi bi-house-door"></i> Dashboard
+                    </a>
                 </form>
-                <div class="d-flex justify-content-between">
-                    <a href="dashboard.php" class="btn btn-outline-primary btn-sm"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
-                    <a href="cart.php" class="btn btn-outline-secondary btn-sm"><i class="bi bi-cart3"></i> View Cart</a>
-                </div>
             </div>
         </div>
     </div>

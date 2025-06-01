@@ -83,10 +83,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_trip'])) {
 </head>
 <body>
     <div class="container py-4 position-relative">
-        <a href="dashboard.php" class="btn btn-secondary dashboard-btn">
-            <i class="bi bi-house"></i> Back to Dashboard
-        </a>
-        <h2 class="mb-4"><i class="bi bi-train-front"></i> Book a Trip</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-4 fw-bold"><i class="bi bi-train-front"></i> Book a Trip</h2>
+            <a href="dashboard.php" class="btn btn-outline-primary me-2">
+                <i class="bi bi-house-door"></i> Dashboard
+            </a>
+        </div>
 
         <form class="row g-3 mb-4" method="get" action="">
             <div class="col-md-3">

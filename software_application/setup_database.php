@@ -124,7 +124,7 @@ $table_sql = [
         lineOfSaleQuantity INT,
         lineOfSaleAmount FLOAT,
         totalAmountPay FLOAT,
-        saleStatus ENUM('Completed', 'Incompleted') DEFAULT 'Incompleted',
+        saleStatus ENUM('Completed', 'Incompleted', 'Rescheduled') DEFAULT 'Incompleted',
         FOREIGN KEY (accountID) REFERENCES account(accountID),
         FOREIGN KEY (promotionID) REFERENCES promotion(promotionID),
         FOREIGN KEY (redemptionID) REFERENCES point_redemption(redemptionID)
@@ -205,6 +205,7 @@ $table_sql = [
         refundAmount DECIMAL(10,2) DEFAULT 0,
         refundDate DATE NULL,
         refundTime TIME NULL,
+        originalBookingID INT NULL,
         FOREIGN KEY (saleID) REFERENCES sale(saleID),
         FOREIGN KEY (tripID) REFERENCES trip(tripID),
         FOREIGN KEY (accountID) REFERENCES account(accountID)

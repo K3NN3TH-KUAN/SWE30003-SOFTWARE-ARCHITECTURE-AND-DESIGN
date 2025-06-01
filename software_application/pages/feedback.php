@@ -148,13 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </nav>
-    <div class="container position-relative">
-        <div class="d-flex justify-content-end" style="margin-top: 1.5rem;">
-            <a href="dashboard.php" class="btn btn-secondary btn-sm">
-                <i class="bi bi-house"></i> Dashboard
-            </a>
-        </div>
-    </div>
+
     <div class="container">
         <div class="feedback-card">
             <div class="text-center mb-4">
@@ -195,6 +189,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <button type="submit" class="btn btn-feedback">
                         <i class="bi bi-send"></i> Submit Feedback
                     </button>
+                    <a href="dashboard.php" class="btn btn-outline-primary me-2 mt-3 w-100">
+                        <i class="bi bi-house-door"></i> Dashboard
+                    </a>
                 </div>
             </form>
         </div>

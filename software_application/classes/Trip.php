@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/Notification.php';
+require_once __DIR__ . '/LineOfSale.php';
 
 class Trip {
     private $tripID;
@@ -256,51 +257,69 @@ class Trip {
     public function rescheduleBooking($bookingID, $newTripID) {
         $database = new Database();
         $db = $database->getConnection();
-        
+
         try {
             $db->beginTransaction();
-            
-            $sql = "SELECT * FROM trip_booking WHERE bookingID = :bookingID";
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':bookingID', $bookingID);
-            $stmt->execute();
+
+            // 1. Get the original booking, sale, and trip info
+            $stmt = $db->prepare("SELECT * FROM trip_booking WHERE bookingID = ?");
+            $stmt->execute([$bookingID]);
             $booking = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if (!$booking) {
-                throw new Exception("Booking not found");
-            }
-            
-            $sql = "UPDATE trip_booking 
-                    SET bookingStatus = 'Rescheduled', 
-                        rescheduledTripID = :newTripID 
-                    WHERE bookingID = :bookingID";
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':newTripID', $newTripID);
-            $stmt->bindParam(':bookingID', $bookingID);
-            $stmt->execute();
-            
-            $notification = new Notification();
-            $notification->createNotification(
-                $booking['accountID'],
-                "Your trip has been rescheduled. Please check your booking details.",
-                'reschedule'
-            );
-            
-            $lineOfSale = new LineOfSale();
-            $lineOfSale->createNewLineOfSale(
-                $booking['saleID'],
-                'Trip',
-                $newTripID,
-                $booking['seatsBooked'],
-                $booking['tripPrice'],
-                $booking['seatsBooked'] * $booking['tripPrice']
-            );
-            
+
+            if (!$booking) throw new Exception("Booking not found");
+
+            $oldSaleID = $booking['saleID'];
+            $accountID = $booking['accountID'];
+
+            // Get seats and price from old line_of_sale
+            $stmt = $db->prepare("SELECT * FROM line_of_sale WHERE saleID = ? AND tripID = ?");
+            $stmt->execute([$oldSaleID, $booking['tripID']]);
+            $oldLine = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$oldLine) throw new Exception("Original line_of_sale not found");
+
+            $seats = $oldLine['itemQuantity'];
+            $price = $oldLine['itemAmount'];
+            $total = $oldLine['totalAmountPerLineOfSale'];
+
+            // 2. Create a new sale for the rescheduled trip
+            $stmt = $db->prepare("INSERT INTO sale (accountID, saleDate, saleTime, lineOfSaleQuantity, lineOfSaleAmount, totalAmountPay, saleStatus) VALUES (?, CURDATE(), CURTIME(), ?, ?, ?, 'Completed')");
+            $stmt->execute([$accountID, $seats, $price, $total]);
+            $newSaleID = $db->lastInsertId();
+
+            // 3. Create a new line_of_sale for the new trip
+            $stmt = $db->prepare("INSERT INTO line_of_sale (saleID, type, tripID, itemQuantity, itemAmount, totalAmountPerLineOfSale) VALUES (?, 'Trip', ?, ?, ?, ?)");
+            $stmt->execute([$newSaleID, $newTripID, $seats, $price, $total]);
+
+            // 4. Update the old sale status to 'Rescheduled'
+            $stmt = $db->prepare("UPDATE sale SET saleStatus = 'Rescheduled' WHERE saleID = ?");
+            $stmt->execute([$oldSaleID]);
+
+            // 5. Update the old booking to 'Rescheduled'
+            $stmt = $db->prepare("UPDATE trip_booking SET bookingStatus = 'Rescheduled', rescheduledTripID = ? WHERE bookingID = ?");
+            $stmt->execute([$newTripID, $bookingID]);
+
+            // 6. Create a new booking for the new trip, link to original booking
+            $stmt = $db->prepare("INSERT INTO trip_booking (saleID, tripID, accountID, bookingStatus, originalTripID, rescheduledTripID, bookingDate, originalBookingID) VALUES (?, ?, ?, 'Booked', ?, NULL, NOW(), ?)");
+            $stmt->execute([$newSaleID, $newTripID, $accountID, $booking['tripID'], $bookingID]);
+
+            // --- ADD THIS: Update availableSeats for both trips ---
+            $stmt = $db->prepare("UPDATE trip SET availableSeats = availableSeats + ? WHERE tripID = ?");
+            $stmt->execute([$seats, $booking['tripID']]); // Increase seats in old trip
+
+            $stmt = $db->prepare("UPDATE trip SET availableSeats = availableSeats - ? WHERE tripID = ?");
+            $stmt->execute([$seats, $newTripID]); // Decrease seats in new trip
+            // --- END ADD ---
+
             $db->commit();
+
+            // Optionally, create a notification for the user here
+
             return true;
         } catch (Exception $e) {
-            $db->rollBack();
-            return false;
+            if ($db->inTransaction()) $db->rollBack();
+            error_log("RESCHEDULE ERROR: " . $e->getMessage());
+            return $e->getMessage();
         }
     }
 

@@ -95,10 +95,13 @@ $statusColors = [
 </head>
 <body>
     <div class="container py-4 position-relative">
-        <a href="dashboard.php" class="btn btn-secondary dashboard-btn">
-            <i class="bi bi-house"></i> Back to Dashboard
-        </a>
-        <h2 class="mb-4"><i class="bi bi-clock-history"></i> Purchase History</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-4 fw-bold"><i class="bi bi-clock-history"></i> Purchase History</h2>
+            <a href="dashboard.php" class="btn btn-outline-primary me-2">
+                <i class="bi bi-house-door"></i> Dashboard
+            </a>
+        </div>
+        
         <?php if ($reorderSuccess): ?>
             <div class="alert alert-success">Items from this sale have been added to your cart! <a href="cart.php" class="alert-link">View Cart</a></div>
         <?php endif; ?>

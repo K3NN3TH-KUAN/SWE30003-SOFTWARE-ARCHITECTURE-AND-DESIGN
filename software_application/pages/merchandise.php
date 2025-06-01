@@ -66,7 +66,7 @@ $allMerchandise = $merchandise->getAllMerchandise(); // This will fetch all merc
 <body>
     <div class="container py-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="fw-bold">ART Merchandise</h1>
+            <h1 class="fw-bold"><i class="bi bi-bag"></i> ART Merchandise</h1>
             <div>
                 <a href="dashboard.php" class="btn btn-outline-primary me-2">
                     <i class="bi bi-house-door"></i> Dashboard

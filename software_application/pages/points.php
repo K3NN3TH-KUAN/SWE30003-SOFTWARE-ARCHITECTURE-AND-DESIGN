@@ -188,13 +188,13 @@ $redeemedVouchers = $promotion->getRedeemedVouchers($accountID);
     </style>
 </head>
 <body>
-    <div class="container py-5">
-        <!-- Back to Dashboard Button -->
-        <a href="dashboard.php" class="btn btn-dashboard">
-            <i class="bi bi-house-door"></i> Back to Dashboard
-        </a>
-
-        <h2 class="mb-4 text-center"><i class="bi bi-gift"></i> Points & Rewards</h2>
+    <div class="container py-5 position-relative">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-4 fw-bold"><i class="bi bi-gift"></i> Points & Rewards</h2> 
+            <a href="dashboard.php" class="btn btn-outline-primary me-2">
+                <i class="bi bi-house-door"></i> Dashboard
+            </a>
+        </div>
         
         <?php if (isset($success)): ?>
             <div class="alert alert-success text-center"><?php echo $success; ?></div>

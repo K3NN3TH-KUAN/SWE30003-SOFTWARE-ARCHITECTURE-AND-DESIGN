@@ -102,6 +102,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #6366f1;
             margin-top: 2rem;
             margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            /* border-bottom: 2px solid #e0e7ff; */
         }
         .identity-preview {
             max-width: 100%;
@@ -109,6 +111,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 0.5rem;
             margin-bottom: 1rem;
             border: 1px solid #e5e7eb;
+        }
+        .section-container {
+            border: 1px solid #e0e7ff;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            background: #fafafa;
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .section-header i {
+            color: #6366f1;
+        }
+        .form-control:read-only {
+            background-color: #f8fafc;
+        }
+        .form-control:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
         }
     </style>
 </head>
@@ -128,116 +153,118 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php endif; ?>
 
                 <!-- Profile Info -->
-                <div class="section-title"><i class="bi bi-person-lines-fill"></i> Account Information</div>
-                <form method="post" id="profileForm" class="mb-4">
-                    <div class="row mb-3">
-                        <div class="col-sm-4 profile-label">Name:</div>
-                        <div class="col-sm-8">
-                            <input type="text" name="accountName" class="form-control" value="<?php echo htmlspecialchars($user['accountName']); ?>" required readonly>
+                <div class="section-container">
+                    <div class="section-header">
+                        <h3 class="section-title mb-0"><i class="bi bi-person-lines-fill"></i> Account Information</h3>
+                    </div>
+                    <form method="post" id="profileForm" class="mb-4">
+                        <div class="row mb-3">
+                            <div class="col-sm-4 profile-label">Name:</div>
+                            <div class="col-sm-8">
+                                <input type="text" name="accountName" class="form-control" value="<?php echo htmlspecialchars($user['accountName']); ?>" required readonly>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-sm-4 profile-label">Email:</div>
-                        <div class="col-sm-8">
-                            <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($user['email']); ?>" required readonly>
+                        <div class="row mb-3">
+                            <div class="col-sm-4 profile-label">Email:</div>
+                            <div class="col-sm-8">
+                                <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($user['email']); ?>" required readonly>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-sm-4 profile-label">Phone Number:</div>
-                        <div class="col-sm-8">
-                            <input type="text" name="phoneNumber" class="form-control" value="<?php echo htmlspecialchars($user['phoneNumber']); ?>" required readonly>
+                        <div class="row mb-3">
+                            <div class="col-sm-4 profile-label">Phone Number:</div>
+                            <div class="col-sm-8">
+                                <input type="text" name="phoneNumber" class="form-control" value="<?php echo htmlspecialchars($user['phoneNumber']); ?>" required readonly>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-sm-4 profile-label">New Password:</div>
-                        <div class="col-sm-8">
-                            <input type="password" name="password" class="form-control" placeholder="Leave blank to keep current" readonly>
+                        <div class="row mb-3">
+                            <div class="col-sm-4 profile-label">New Password:</div>
+                            <div class="col-sm-8">
+                                <input type="password" name="password" class="form-control" placeholder="Leave blank to keep current" readonly>
+                            </div>
                         </div>
-                    </div>
-                    <div class="d-flex justify-content-end mb-3" id="profileButtons">
-                        <button type="button" id="editProfileBtn" class="btn btn-warning"><i class="bi bi-pencil"></i> Edit Profile</button>
-                        <button type="submit" name="updateProfile" id="updateProfileBtn" class="btn btn-primary d-none ms-2"><i class="bi bi-save"></i> Update Profile</button>
-                        <button type="button" id="discardChangesBtn" class="btn btn-secondary d-none ms-2">Discard Changes</button>
-                    </div>
-                </form>
+                        <div class="d-flex justify-content-end mb-3" id="profileButtons">
+                            <button type="button" id="editProfileBtn" class="btn btn-warning"><i class="bi bi-pencil"></i> Edit Profile</button>
+                            <button type="submit" name="updateProfile" id="updateProfileBtn" class="btn btn-primary d-none ms-2"><i class="bi bi-save"></i> Update Profile</button>
+                            <button type="button" id="discardChangesBtn" class="btn btn-secondary d-none ms-2">Discard Changes</button>
+                        </div>
+                    </form>
+                </div>
                 <script>
-                    const editBtn = document.getElementById('editProfileBtn');
-                    const updateBtn = document.getElementById('updateProfileBtn');
-                    const discardBtn = document.getElementById('discardChangesBtn');
-                    const form = document.getElementById('profileForm');
-                    const inputs = form.querySelectorAll('input');
+                    // Enable edit mode for profile fields
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const editBtn = document.getElementById('editProfileBtn');
+                        const updateBtn = document.getElementById('updateProfileBtn');
+                        const discardBtn = document.getElementById('discardChangesBtn');
+                        const form = document.getElementById('profileForm');
+                        const inputs = form.querySelectorAll('input:not([type="hidden"])');
 
-                    let originalValues = {};
-
-                    editBtn.addEventListener('click', function() {
-                        inputs.forEach(input => {
-                            originalValues[input.name] = input.value;
-                            input.removeAttribute('readonly');
+                        editBtn.addEventListener('click', function() {
+                            inputs.forEach(input => {
+                                if (input.name !== 'email') input.removeAttribute('readonly');
+                            });
+                            updateBtn.classList.remove('d-none');
+                            discardBtn.classList.remove('d-none');
+                            editBtn.classList.add('d-none');
                         });
-                        editBtn.classList.add('d-none');
-                        updateBtn.classList.remove('d-none');
-                        discardBtn.classList.remove('d-none');
-                    });
 
-                    discardBtn.addEventListener('click', function() {
-                        inputs.forEach(input => {
-                            input.value = originalValues[input.name];
-                            input.setAttribute('readonly', true);
+                        discardBtn.addEventListener('click', function() {
+                            // Reload the page to discard changes
+                            window.location.reload();
                         });
-                        editBtn.classList.remove('d-none');
-                        updateBtn.classList.add('d-none');
-                        discardBtn.classList.add('d-none');
-                    });
-
-                    // On submit, keep fields editable (so user can see what they submitted)
-                    form.addEventListener('submit', function() {
-                        inputs.forEach(input => input.removeAttribute('readonly'));
                     });
                 </script>
 
                 <!-- Identity Verification Section -->
-                <div class="section-title"><i class="bi bi-file-earmark-person"></i> Identity Verification</div>
-                <form method="post" enctype="multipart/form-data" class="mb-4">
-                    <?php if (!empty($user['identityDocument'])): ?>
+                <div class="section-container">
+                    <div class="section-header">
+                        <h3 class="section-title mb-0"><i class="bi bi-file-earmark-person"></i> Identity Verification</h3>
+                    </div>
+                    <form method="post" enctype="multipart/form-data" class="mb-4">
+                        <?php if (!empty($user['identityDocument'])): ?>
+                            <div class="mb-3">
+                                <label class="form-label">Uploaded Document:</label><br>
+                                <img src="<?php echo htmlspecialchars($user['identityDocument']); ?>" class="identity-preview" alt="Identity Document">
+                            </div>
+                        <?php endif; ?>
                         <div class="mb-3">
-                            <label class="form-label">Uploaded Document:</label><br>
-                            <img src="<?php echo htmlspecialchars($user['identityDocument']); ?>" class="identity-preview" alt="Identity Document">
+                            <label for="identityDocument" class="form-label">Upload Identity Document (PDF, JPG, PNG)</label>
+                            <input type="file" name="identityDocument" id="identityDocument" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
                         </div>
-                    <?php endif; ?>
-                    <div class="mb-3">
-                        <label for="identityDocument" class="form-label">Upload Identity Document (PDF, JPG, PNG)</label>
-                        <input type="file" name="identityDocument" id="identityDocument" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
-                    </div>
-                    <div class="d-flex justify-content-end">
-                        <button type="submit" name="uploadIdentity" class="btn btn-success"><i class="bi bi-upload"></i> Upload Document</button>
-                    </div>
-                </form>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" name="uploadIdentity" class="btn btn-success"><i class="bi bi-upload"></i> Upload Document</button>
+                        </div>
+                    </form>
+                </div>
 
                 <!-- Account Status -->
-                <div class="section-title"><i class="bi bi-shield-check"></i> Account Status</div>
-                <div class="row mb-3">
-                    <div class="col-sm-4 profile-label">Account Status:</div>
-                    <div class="col-sm-8">
-                        <span class="badge <?php echo $user['accountStatus'] === 'active' ? 'bg-success' : 'bg-danger'; ?>">
-                            <?php echo ucfirst($user['accountStatus']); ?>
-                        </span>
+                <div class="section-container">
+                    <div class="section-header">
+                        <h3 class="section-title mb-0"><i class="bi bi-shield-check"></i> Account Status</h3>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 profile-label">Account Status:</div>
+                        <div class="col-sm-8">
+                            <span class="badge <?php echo $user['accountStatus'] === 'active' ? 'bg-success' : 'bg-danger'; ?>">
+                                <?php echo ucfirst($user['accountStatus']); ?>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 profile-label">Verify Status:</div>
+                        <div class="col-sm-8">
+                            <span class="badge <?php echo $user['accountVerifyStatus'] === 'verified' ? 'bg-success' : 'bg-warning text-dark'; ?>">
+                                <?php echo ucfirst($user['accountVerifyStatus']); ?>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-sm-4 profile-label">Balance:</div>
+                        <div class="col-sm-8 fw-bold text-success">RM<?php echo number_format($user['accountBalance'], 2); ?></div>
                     </div>
                 </div>
-                <div class="row mb-3">
-                    <div class="col-sm-4 profile-label">Verify Status:</div>
-                    <div class="col-sm-8">
-                        <span class="badge <?php echo $user['accountVerifyStatus'] === 'verified' ? 'bg-success' : 'bg-warning text-dark'; ?>">
-                            <?php echo ucfirst($user['accountVerifyStatus']); ?>
-                        </span>
-                    </div>
-                </div>
-                <div class="row mb-4">
-                    <div class="col-sm-4 profile-label">Balance:</div>
-                    <div class="col-sm-8 fw-bold text-success">RM<?php echo number_format($user['accountBalance'], 2); ?></div>
-                </div>
-                <div class="d-flex justify-content-between">
-                    <a href="dashboard.php" class="btn btn-outline-primary btn-sm"><i class="bi bi-house"></i> Dashboard</a>
-                    <a href="logout.php" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                <div class="d-flex justify-content-between align-items-center gap-2 mt-4">
+                    <a href="dashboard.php" class="btn btn-outline-primary btn-sm w-100"><i class="bi bi-house"></i> Dashboard</a>
+                    <a href="logout.php" class="btn btn-outline-danger btn-sm w-100"><i class="bi bi-box-arrow-right"></i> Logout</a>
                 </div>
             </div>
         </div>

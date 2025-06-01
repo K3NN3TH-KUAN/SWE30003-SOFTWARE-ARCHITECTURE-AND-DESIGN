@@ -91,19 +91,19 @@ $feedbackList = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-custom">
+    <!-- <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
             <a class="navbar-brand" href="admin_dashboard.php">
                 <img src="../assets/images/logo.png" alt="ART Logo" style="height:32px;vertical-align:middle;margin-right:8px;">
                 ART Admin
             </a>
         </div>
-    </nav>
+    </nav> -->
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
-            <h2 class="fw-bold mb-0"><i class="bi bi-chat-dots"></i> User Feedback</h2>
-            <a href="admin_dashboard.php" class="btn btn-secondary">
-                <i class="bi bi-house"></i> Back to Dashboard
+            <h2 class="fw-bold mb-0"> User Feedback</h2>
+            <a href="admin_dashboard.php" class="btn btn-outline-primary me-2">
+                <i class="bi bi-house-door"></i> Dashboard
             </a>
         </div>
         <div class="feedback-table-card">
