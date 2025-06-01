@@ -170,14 +170,14 @@ $table_sql = [
     // Statistic (for storing most/least popular routes per date)
     "CREATE TABLE IF NOT EXISTS statistic (
         statisticID INT AUTO_INCREMENT PRIMARY KEY,
-        adminID INT,
-        reportType ENUM('most_popular', 'least_popular'),
-        route VARCHAR(100),
-        statDate DATE,
-        totalPassengers INT,
-        totalCancellations INT,
-        generatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (adminID) REFERENCES admin(adminID)
+        route VARCHAR(255),
+        date DATE,
+        time VARCHAR(20),
+        passengers INT,
+        cancellations INT,
+        status VARCHAR(50),
+        stat_month VARCHAR(12),
+        generated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )",
 
     // TopUp

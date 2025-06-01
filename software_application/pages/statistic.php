@@ -8,9 +8,14 @@ require_once '../classes/Database.php';
 $database = new Database();
 $db = $database->getConnection();
 
-// 1. Get all trips
-$tripsStmt = $db->prepare("SELECT * FROM trip");
-$tripsStmt->execute();
+// Get selected month from GET parameter
+$selectedMonth = $_GET['stat_month'] ?? date('Y-m');
+$monthStart = $selectedMonth . '-01';
+$monthEnd = date('Y-m-t', strtotime($monthStart));
+
+// 1. Get all trips for the selected month
+$tripsStmt = $db->prepare("SELECT * FROM trip WHERE tripDate BETWEEN ? AND ?");
+$tripsStmt->execute([$monthStart, $monthEnd]);
 $trips = $tripsStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // 2. Aggregate passenger counts and cancellations per route
@@ -81,15 +86,34 @@ foreach ($routeStats as $route => $data) {
 
 // Add CSV Export Handler
 if (isset($_POST['generate_report'])) {
+    // Store report data in the statistic table
+    $insertStmt = $db->prepare("
+        INSERT INTO statistic (route, date, time, passengers, cancellations, status, stat_month)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ");
+
+    foreach ($routeStats as $route => $data) {
+        foreach ($data['trips'] as $trip) {
+            $insertStmt->execute([
+                $route,
+                $trip['date'],
+                $trip['time'],
+                $trip['passengers'],
+                $trip['cancellations'],
+                $trip['status'],
+                $selectedMonth
+            ]);
+        }
+    }
+
+    // CSV output code
+    $monthLabel = date('F Y', strtotime($selectedMonth . '-01'));
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename="art_route_statistics_' . date('Y-m-d') . '.csv"');
-    
     $output = fopen('php://output', 'w');
-    
-    // Add CSV headers
+    fputcsv($output, ["ART Route Statistics for $monthLabel"]);
+    fputcsv($output, []);
     fputcsv($output, ['Route', 'Date', 'Time', 'Passengers', 'Cancellations', 'Status']);
-    
-    // Add data rows
     foreach ($routeStats as $route => $data) {
         foreach ($data['trips'] as $trip) {
             fputcsv($output, [
@@ -102,7 +126,6 @@ if (isset($_POST['generate_report'])) {
             ]);
         }
     }
-    
     fclose($output);
     exit();
 }
@@ -180,6 +203,17 @@ if (isset($_POST['generate_report'])) {
             </a>
         </div>
     </div>
+
+    <form method="get" class="row g-3 align-items-end mb-4">
+        <div class="col-auto">
+            <label for="stat_month" class="form-label mb-0">Select Month</label>
+            <input type="month" class="form-control" name="stat_month" id="stat_month"
+                   value="<?= htmlspecialchars($selectedMonth) ?>">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </div>
+    </form>
 
     <div class="card mb-4">
         <div class="card-body">
