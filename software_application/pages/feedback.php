@@ -148,6 +148,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </nav>
+    <div class="container position-relative">
+        <div class="d-flex justify-content-end" style="margin-top: 1.5rem;">
+            <a href="dashboard.php" class="btn btn-secondary btn-sm">
+                <i class="bi bi-house"></i> Dashboard
+            </a>
+        </div>
+    </div>
     <div class="container">
         <div class="feedback-card">
             <div class="text-center mb-4">

@@ -167,17 +167,16 @@ $table_sql = [
         FOREIGN KEY (accountID) REFERENCES account(accountID)
     )",
 
-    // Statistic
+    // Statistic (for storing most/least popular routes per date)
     "CREATE TABLE IF NOT EXISTS statistic (
         statisticID INT AUTO_INCREMENT PRIMARY KEY,
-        adminID INT null,
-        mostPopularTrip VARCHAR(100),
-        leastPopularTrip VARCHAR(100),
-        creationDate DATE,
-        creationTime TIME,
-        totalAccount INT,
-        ticketSales INT,
-        tripCancellation INT,
+        adminID INT,
+        reportType ENUM('most_popular', 'least_popular'),
+        route VARCHAR(100),
+        statDate DATE,
+        totalPassengers INT,
+        totalCancellations INT,
+        generatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (adminID) REFERENCES admin(adminID)
     )",
 
@@ -490,6 +489,44 @@ foreach ($dummyTrips as $trip) {
         $trip['tripStatus'],
         $trip['maxSeats'],
         $trip['availableSeats']
+    );
+    $stmt->execute();
+    $stmt->close();
+}
+
+// Insert a few admin records (with password 'admin' hashed)
+$adminData = [
+    [
+        'adminRole' => 'system admin',
+        'adminName' => 'Kenneth',
+        'adminPhoneNumber' => '0123456789',
+        'adminEmail' => 'kenneth@example.com',
+        'adminPassword' => password_hash('admin', PASSWORD_DEFAULT)
+    ],
+    [
+        'adminRole' => 'feedback coordinator',
+        'adminName' => 'Bob',
+        'adminPhoneNumber' => '0198765432',
+        'adminEmail' => 'bob@example.com',
+        'adminPassword' => password_hash('admin', PASSWORD_DEFAULT)
+    ],
+    [
+        'adminRole' => 'promotion coordinator',
+        'adminName' => 'Carol',
+        'adminPhoneNumber' => '0171234567',
+        'adminEmail' => 'carol@example.com',
+        'adminPassword' => password_hash('admin', PASSWORD_DEFAULT)
+    ]
+];
+foreach ($adminData as $admin) {
+    $stmt = $conn->prepare("INSERT INTO admin (adminRole, adminName, adminPhoneNumber, adminEmail, adminPassword) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param(
+        "sssss",
+        $admin['adminRole'],
+        $admin['adminName'],
+        $admin['adminPhoneNumber'],
+        $admin['adminEmail'],
+        $admin['adminPassword']
     );
     $stmt->execute();
     $stmt->close();
