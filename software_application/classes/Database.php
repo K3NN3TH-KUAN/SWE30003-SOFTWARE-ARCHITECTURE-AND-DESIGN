@@ -13,9 +13,14 @@ class Database {
             $this->conn = new PDO(
                 "mysql:host=" . $this->host . ";dbname=" . $this->db_name,
                 $this->username,
-                $this->password
+                $this->password,
+                array(
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_TIMEOUT => 60,  // 60 seconds timeout
+                    PDO::MYSQL_ATTR_INIT_COMMAND => "SET SESSION wait_timeout=60, innodb_lock_wait_timeout=60"
+                )
             );
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch(PDOException $e) {
             echo "Connection Error: " . $e->getMessage();
         }
