@@ -203,6 +203,9 @@ $table_sql = [
         originalTripID INT,
         rescheduledTripID INT,
         bookingDate DATETIME,
+        refundAmount DECIMAL(10,2) DEFAULT 0,
+        refundDate DATE NULL,
+        refundTime TIME NULL,
         FOREIGN KEY (saleID) REFERENCES sale(saleID),
         FOREIGN KEY (tripID) REFERENCES trip(tripID),
         FOREIGN KEY (accountID) REFERENCES account(accountID)
@@ -493,5 +496,5 @@ foreach ($dummyTrips as $trip) {
 }
 
 $conn->close();
-echo "Setup complete.";
+echo "Setup complete.";
 ?>

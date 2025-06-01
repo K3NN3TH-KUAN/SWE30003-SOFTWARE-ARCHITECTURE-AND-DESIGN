@@ -22,5 +22,9 @@ class Database {
 
         return $this->conn;
     }
+    // Add this method to close connection
+    public function closeConnection() {
+        $this->conn = null;
+    }
 }
 ?>

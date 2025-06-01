@@ -26,11 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reorder_sale_id'])) {
 
     foreach ($items as $item) {
         if ($item['type'] === 'Merchandise' && !empty($item['merchandiseID'])) {
-            // Get merchandise details
             $merchandise = new Merchandise();
             $merch = $merchandise->getMerchandiseByID($item['merchandiseID']);
             if ($merch) {
-                // Check if already in cart
                 $found = false;
                 foreach ($_SESSION['cart'] as &$cartItem) {
                     if ($cartItem['merchandiseID'] == $merch['merchandiseID']) {
@@ -54,6 +52,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reorder_sale_id'])) {
     }
     $reorderSuccess = true;
 }
+
+$statusColors = [
+    'Booked' => 'success',
+    'Rescheduled' => 'warning',
+    'Cancelled' => 'secondary'
+];
 ?>
 <!DOCTYPE html>
 <html>
@@ -103,25 +107,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reorder_sale_id'])) {
         <?php else: ?>
             <div class="row g-4">
                 <?php foreach ($sales as $sale): 
-                    // Get line items for this sale
                     $lineOfSale = new LineOfSale();
                     $lineItems = $lineOfSale->getLineOfSaleBySaleID($sale['saleID']);
                     $hasTrip = false;
                     $tripDetails = null;
+                    $bookingDetails = null;
                     
-                    // Check if any line item is a trip
                     foreach ($lineItems as $item) {
                         if ($item['type'] === 'Trip' && $item['tripID']) {
                             $hasTrip = true;
                             $trip = new Trip();
                             $tripDetails = $trip->getTripByID($item['tripID']);
+                            $bookingDetails = $trip->getBookingBySaleID($sale['saleID']);
                             break;
                         }
                     }
                 ?>
                     <div class="col-12">
                         <div class="card history-card h-100 mx-auto position-relative" style="max-width: 800px;">
-                            <!-- Status badge at top right -->
                             <span class="badge status-badge bg-<?php echo $sale['saleStatus'] === 'Completed' ? 'success' : 'secondary'; ?> position-absolute" style="top: 18px; right: 18px;">
                                 <?php echo htmlspecialchars($sale['saleStatus']); ?>
                             </span>
@@ -139,6 +142,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reorder_sale_id'])) {
                                 </div>
                                 
                                 <?php if ($sale['saleStatus'] === 'Completed' && $hasTrip && $tripDetails): ?>
+                                    <div class="mt-2">
+                                        <strong>Booking Status:</strong> 
+                                        <?php if ($bookingDetails): ?>
+                                            <span class="badge bg-<?= $statusColors[$bookingDetails['bookingStatus']] ?>">
+                                                <?= $bookingDetails['bookingStatus'] ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="badge bg-info">Processing</span>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
+                                
+                                <?php if ($sale['saleStatus'] === 'Completed' && $hasTrip && $tripDetails): ?>
                                 <div class="mt-3 p-3 bg-light rounded">
                                     <h6 class="mb-2">Trip Details:</h6>
                                     <p class="mb-2">
@@ -151,10 +167,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reorder_sale_id'])) {
                                         <img src="../assets/images/qrcode.png" alt="Trip QR Code" style="width: 150px; height: 150px;" class="border p-2 rounded">
                                         <p class="text-muted mt-2 small">Show this QR code when boarding the ART</p>
                                     </div>
+                                    
+                                    <?php if ($bookingDetails && $bookingDetails['bookingStatus'] !== 'Cancelled'): ?>
+                                        <div class="d-flex mt-3 gap-2">
+                                            <a href="reschedule_booking.php?booking_id=<?= $bookingDetails['bookingID'] ?>" 
+                                               class="btn btn-warning btn-sm flex-fill">
+                                                <i class="bi bi-calendar-event"></i> Reschedule
+                                            </a>
+                                            <a href="cancel_booking.php?booking_id=<?= $bookingDetails['bookingID'] ?>" 
+                                               class="btn btn-outline-danger btn-sm flex-fill">
+                                                <i class="bi bi-x-circle"></i> Cancel
+                                            </a>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                                 <?php endif; ?>
 
-                                <!-- Actions below price, inline like date/time -->
                                 <div class="mt-3">
                                     <?php if ($hasTrip && $sale['saleStatus'] === 'Completed'): ?>
                                         <a href="trip_receipt.php?view_receipt=<?php echo urlencode($sale['saleID']); ?>" class="btn btn-outline-primary btn-sm me-2" target="_blank">

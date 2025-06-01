@@ -199,14 +199,34 @@ if (!$merchandiseError) {
             }
 
             // Create line of sale for trip
+            if (empty($saleID) || empty($tripID) || empty($seatQtySelected) || $discountedTripPrice === null) {
+                error_log('ERROR: One or more required values for trip line of sale are missing!');
+                error_log(print_r([
+                    'saleID' => $saleID,
+                    'tripID' => $tripID,
+                    'seatQtySelected' => $seatQtySelected,
+                    'discountedTripPrice' => $discountedTripPrice
+                ], true));
+                $_SESSION['error'] = "Internal error: missing booking data.";
+                header("Location: checkout_trip.php");
+                exit();
+            }
+            error_log('Creating trip line of sale: ' . print_r([
+                'saleID' => $saleID,
+                'tripID' => $tripID,
+                'seatQtySelected' => $seatQtySelected,
+                'discountedTripPrice' => $discountedTripPrice,
+                'totalAmountPerLineOfSale' => $seatQtySelected * $discountedTripPrice
+            ], true));
             if (!$lineOfSale->createNewLineOfSale(
                 $saleID,
                 'Trip',
                 $tripID,
                 $seatQtySelected,
                 $discountedTripPrice,
-                $tripTotal
+                $seatQtySelected * $discountedTripPrice
             )) {
+                error_log('Failed to create trip line of sale!');
                 $_SESSION['error'] = "Failed to create trip line item. Please try again.";
                 header("Location: checkout_trip.php");
                 exit();
@@ -341,7 +361,7 @@ if ($success) {
                 <td>Trip</td>
                 <td><?php echo $seatQtySelected; ?></td>
                 <td>RM<?php echo number_format($discountedTripPrice, 2); ?></td>
-                <td>RM<?php echo number_format($tripTotal, 2); ?></td>
+                <td>RM<?php echo number_format($seatQtySelected * $discountedTripPrice, 2); ?></td>
             </tr>
             <!-- Merchandise Lines -->
             <?php if (!empty($merchandiseLineItems)): ?>
@@ -351,7 +371,7 @@ if ($success) {
                     <td>Merchandise</td>
                     <td><?php echo $line['quantity']; ?></td>
                     <td>RM<?php echo number_format($line['discounted_price'], 2); ?></td>
-                    <td>RM<?php echo number_format($line['subtotal'], 2); ?></td>
+                    <td>RM<?php echo number_format($line['discounted_price'] * $line['quantity'], 2); ?></td>
                 </tr>
                 <?php endforeach; ?>
             <?php endif; ?>
