@@ -1,34 +1,41 @@
 <?php
-require_once '../classes/Account.php';
+require_once '../classes/Database.php';
 session_start();
 $message = "";
 
 if (isset($_GET['logout'])) {
     session_destroy();
-    header('Location: login.php');
+    header('Location: admin_login.php');
     exit();
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $account = new Account();
     $loginInput = $_POST['loginInput'];
     $password = $_POST['password'];
-    $user = $account->login($loginInput, $password);
-    if ($user) {
-        $_SESSION['user'] = $user;
-        $_SESSION['accountID'] = $user['accountID'];
-        $_SESSION['accountName'] = $user['accountName'];
-        header('Location: dashboard.php');
+
+    $database = new Database();
+    $db = $database->getConnection();
+
+    // Allow login by email or name
+    $stmt = $db->prepare("SELECT * FROM admin WHERE adminEmail = ? OR adminName = ?");
+    $stmt->execute([$loginInput, $loginInput]);
+    $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($admin && password_verify($password, $admin['adminPassword'])) {
+        $_SESSION['adminID'] = $admin['adminID'];
+        $_SESSION['adminName'] = $admin['adminName'];
+        $_SESSION['adminRole'] = $admin['adminRole'];
+        header('Location: admin_dashboard.php');
         exit();
     } else {
-        $message = "Invalid login credentials";
+        $message = "Invalid admin credentials";
     }
 }
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
+    <title>Admin Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -56,15 +63,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: linear-gradient(135deg, #6366f1 0%, #60a5fa 100%);
             color: #fff;
         }
-        .signup-link {
-            color: #6366f1;
-            font-weight: 500;
-            text-decoration: none;
-        }
-        .signup-link:hover {
-            text-decoration: underline;
-            color: #4338ca;
-        }
     </style>
 </head>
 <body>
@@ -73,17 +71,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="login-card">
                 <div class="text-center mb-4">
                     <div class="icon-circle">
-                        <i class="bi bi-person-circle"></i>
+                        <i class="bi bi-shield-lock"></i>
                     </div>
-                    <h2 class="fw-bold mb-1">Login</h2>
-                    <p class="text-muted mb-0">Sign in to your ART account</p>
+                    <h2 class="fw-bold mb-1">Admin Login</h2>
+                    <p class="text-muted mb-0">Sign in to the ART admin panel</p>
                 </div>
                 <?php if ($message): ?>
                     <div class="alert alert-danger"><?php echo $message; ?></div>
                 <?php endif; ?>
                 <form method="post" class="mb-3">
                     <div class="mb-3">
-                        <label for="loginInput" class="form-label">Email, Name, or Phone Number</label>
+                        <label for="loginInput" class="form-label">Email or Name</label>
                         <input type="text" name="loginInput" id="loginInput" class="form-control" required>
                     </div>
                     <div class="mb-3">
@@ -95,16 +93,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </button>
                 </form>
                 <div class="text-center mt-3">
-                    <span>Doesn't have an account? </span>
-                    <a href="register.php" class="signup-link">Sign up</a>
-                </div>
-                <div class="text-center mt-2">
-                    <span>Are you an admin? </span>
-                    <a href="admin_login.php" class="signup-link">Switch to Admin Login</a>
+                    <span>Not an admin? </span>
+                    <a href="login.php" class="signup-link">Switch to User Login</a>
                 </div>
             </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
+</html> 

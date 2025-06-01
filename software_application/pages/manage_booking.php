@@ -1,102 +1,126 @@
 <?php
 session_start();
-require_once '../classes/Trip.php';
-require_once '../classes/Account.php';
+require_once '../classes/Database.php';
 
-if (!isset($_SESSION['accountID'])) {
+// Check if admin is logged in
+if (!isset($_SESSION['adminID'])) {
     header('Location: login.php');
     exit();
 }
 
-$trip = new Trip();
-$account = new Account();
+$database = new Database();
+$db = $database->getConnection();
+$message = "";
 
-// Handle rescheduling
-if (isset($_POST['reschedule'])) {
-    $bookingID = $_POST['booking_id'];
-    $newTripID = $_POST['new_trip_id'];
-    
-    if ($trip->rescheduleBooking($bookingID, $newTripID)) {
-        $_SESSION['success'] = "Trip successfully rescheduled!";
-    } else {
-        $_SESSION['error'] = "Failed to reschedule trip.";
-    }
-    header("Location: manage_booking.php");
-    exit();
+// Handle Refund
+if (isset($_POST['refund_booking'])) {
+    $bookingID = $_POST['bookingID'];
+    // Example: update booking status and mark as refunded (adjust as per your schema)
+    $stmt = $db->prepare("UPDATE trip_booking SET bookingStatus='Cancelled' WHERE bookingID=?");
+    $stmt->execute([$bookingID]);
+    // You may want to update sale/payment/refund tables as well
+    $message = "Refund processed for booking ID $bookingID!";
 }
 
-// Get user's bookings
-$bookings = $trip->getUserBookings($_SESSION['accountID']);
+// Fetch all bookings (adjust query as per your schema)
+$stmt = $db->query("SELECT b.*, t.origin, t.destination, t.tripDate, t.tripTime, t.tripStatus, a.accountName, a.email
+    FROM trip_booking b
+    JOIN trip t ON b.tripID = t.tripID
+    JOIN account a ON b.accountID = a.accountID
+    ORDER BY b.bookingID DESC");
+$bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Manage Bookings</title>
+    <title>Manage Bookings - Admin Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
+            min-height: 100vh;
+        }
+        .booking-card {
+            border-radius: 1rem;
+            box-shadow: 0 2px 12px rgba(99,102,241,0.08);
+            background: #fff;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .status-badge {
+            padding: 0.35rem 0.65rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+        }
+        .status-Booked {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .status-Rescheduled {
+            background-color: #fef08a;
+            color: #92400e;
+        }
+        .status-Cancelled {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
 </head>
 <body>
-    <div class="container py-4">
-        <h2>My Bookings</h2>
-        
-        <?php foreach ($bookings as $booking): ?>
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <?php echo htmlspecialchars($booking['origin']); ?> to 
-                        <?php echo htmlspecialchars($booking['destination']); ?>
-                    </h5>
-                    <p class="card-text">
-                        Date: <?php echo date('d M Y', strtotime($booking['tripDate'])); ?><br>
-                        Time: <?php echo date('h:i A', strtotime($booking['tripTime'])); ?><br>
-                        Status: <span class="badge bg-<?php echo $booking['bookingStatus'] == 'Confirmed' ? 'success' : 'warning'; ?>">
-                            <?php echo $booking['bookingStatus']; ?>
-                        </span>
-                    </p>
-                    
-                    <?php if ($booking['bookingStatus'] == 'Confirmed'): ?>
-                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" 
-                                data-bs-target="#rescheduleModal<?php echo $booking['bookingID']; ?>">
-                            Reschedule
-                        </button>
-                    <?php endif; ?>
-                </div>
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="fw-bold">Manage Bookings</h1>
+            <a href="admin_dashboard.php" class="btn btn-outline-primary">
+                <i class="bi bi-house-door"></i> Dashboard
+            </a>
+        </div>
+
+        <?php if ($message): ?>
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <?php echo htmlspecialchars($message); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            
-            <!-- Reschedule Modal -->
-            <div class="modal fade" id="rescheduleModal<?php echo $booking['bookingID']; ?>" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Reschedule Trip</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form method="POST" action="">
-                                <input type="hidden" name="booking_id" value="<?php echo $booking['bookingID']; ?>">
-                                <div class="mb-3">
-                                    <label class="form-label">Select New Trip</label>
-                                    <select name="new_trip_id" class="form-select" required>
-                                        <?php
-                                        $availableTrips = $trip->getAvailableTrips();
-                                        foreach ($availableTrips as $trip): ?>
-                                            <option value="<?php echo $trip['tripID']; ?>">
-                                                <?php echo $trip['origin']; ?> to <?php echo $trip['destination']; ?> - 
-                                                <?php echo date('d M Y', strtotime($trip['tripDate'])); ?> 
-                                                <?php echo date('h:i A', strtotime($trip['tripTime'])); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <button type="submit" name="reschedule" class="btn btn-warning">Confirm Reschedule</button>
-                            </form>
-                        </div>
+        <?php endif; ?>
+
+        <?php if (empty($bookings)): ?>
+            <div class="alert alert-warning text-center">No bookings found.</div>
+        <?php endif; ?>
+
+        <?php foreach ($bookings as $booking): ?>
+            <div class="booking-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h4 class="mb-0">Booking #<?= $booking['bookingID'] ?></h4>
+                    <span class="status-badge status-<?= $booking['bookingStatus'] ?>">
+                        <?= $booking['bookingStatus'] ?>
+                    </span>
+                </div>
+                <hr>
+                <div class="row mb-2">
+                    <div class="col-md-6">
+                        <p><strong>User:</strong> <?= htmlspecialchars($booking['accountName']) ?> (<?= htmlspecialchars($booking['email']) ?>)</p>
+                        <p><strong>Trip:</strong> <?= htmlspecialchars($booking['origin']) ?> → <?= htmlspecialchars($booking['destination']) ?></p>
                     </div>
+                    <div class="col-md-6">
+                        <p><strong>Date:</strong> <?= htmlspecialchars($booking['tripDate']) ?></p>
+                        <p><strong>Time:</strong> <?= htmlspecialchars($booking['tripTime']) ?></p>
+                    </div>
+                </div>
+                <div>
+                    <?php if ($booking['bookingStatus'] === 'Cancelled'): ?>
+                        <form method="post" class="d-inline">
+                            <input type="hidden" name="bookingID" value="<?= $booking['bookingID'] ?>">
+                            <input type="hidden" name="refund_booking" value="1">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-cash"></i> Process Refund
+                            </button>
+                        </form>
+                    <?php endif; ?>
                 </div>
             </div>
         <?php endforeach; ?>
     </div>
-    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html> 

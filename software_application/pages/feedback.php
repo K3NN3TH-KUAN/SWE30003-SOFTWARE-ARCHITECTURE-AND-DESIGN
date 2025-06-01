@@ -247,6 +247,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         });
+
+        // Add this new code to handle form reset after successful submission
+        <?php if ($success): ?>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Reset the form
+            document.getElementById('feedbackForm').reset();
+            
+            // Reset the star rating
+            document.getElementById('ratingInput').value = '0';
+            let stars = document.querySelectorAll('.star-rating .bi');
+            stars.forEach(star => {
+                star.classList.remove('bi-star-fill', 'selected');
+                star.classList.add('bi-star');
+            });
+            
+            // Clear the comment textarea
+            document.getElementById('comment').value = '';
+        });
+        <?php endif; ?>
     </script>
 </body>
 </html>
