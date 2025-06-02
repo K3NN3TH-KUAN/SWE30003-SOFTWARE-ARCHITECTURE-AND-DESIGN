@@ -26,6 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $db->prepare('INSERT INTO feedback (accountID, rating, comment, feedbackStatus) VALUES (?, ?, ?, ?)');
         $feedbackStatus = 'pending';
         if ($stmt->execute([$accountID, $rating, $comment, $feedbackStatus])) {
+            $stmt = $db->prepare('INSERT INTO notification (accountID, messageContent, notificationType, notificationDateTime, notificationStatus) VALUES (?, ?, ?, NOW(), ?)');
+            $stmt->execute([$accountID, 'Your feedback was submitted successfully!', 'feedback', 'unread']);
             $success = true;
         } else {
             $error = 'Failed to submit feedback. Please try again.';
