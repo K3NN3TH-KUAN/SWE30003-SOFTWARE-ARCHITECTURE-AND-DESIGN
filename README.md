@@ -1,5 +1,5 @@
 # SWE30003-SOFTWARE-ARCHITECTURE-AND-DESIGN
-# Kuching ART Website (Group_21 A3)
+# Kuching ART Website (Assignment 3 Group_21)
 
 A web-based management and booking system for the Kuching Autonomous Rapid Transit (ART), built with PHP (OOP), MySQL, and Bootstrap.
 
