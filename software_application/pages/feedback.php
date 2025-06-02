@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once '../classes/Database.php';
+$database = new Database();
+$db = $database->getConnection();
 
 if (!isset($_SESSION['accountID'])) {
     header('Location: login.php');
@@ -196,6 +198,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
         </div>
     </div>
+    <footer class="bg-light text-center text-lg-start mt-5 border-top shadow-sm">
+        <div class="container py-3">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <span class="mx-2">@Group_21 (A3)</span>
+                    <span class="mx-2">|</span>
+                    Kuching ART Website &copy; <?php echo date('Y'); ?>. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Interactive star rating

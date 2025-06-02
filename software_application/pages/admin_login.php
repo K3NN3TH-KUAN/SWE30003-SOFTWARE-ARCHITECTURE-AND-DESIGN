@@ -1,5 +1,7 @@
 <?php
 require_once '../classes/Database.php';
+$database = new Database();
+$db = $database->getConnection();
 session_start();
 $message = "";
 

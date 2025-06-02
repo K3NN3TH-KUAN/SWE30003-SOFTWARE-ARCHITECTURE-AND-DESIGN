@@ -11,6 +11,10 @@ if (isset($_GET['from_checkout'])) {
 require_once '../classes/Account.php';
 require_once '../classes/TopUp.php';
 require_once '../classes/Notification.php';
+require_once '../classes/Database.php';
+
+$database = new Database();
+$db = $database->getConnection();
 
 if (!isset($_SESSION['accountID'])) {
     header('Location: login.php');
@@ -19,7 +23,7 @@ if (!isset($_SESSION['accountID'])) {
 
 $account = new Account();
 $topup = new TopUp();
-$notification = new Notification();
+$notification = new Notification($db);
 $accountID = $_SESSION['accountID'];
 $info = $account->getAccountByID($accountID);
 $currentBalance = isset($info['accountBalance']) ? $info['accountBalance'] : 0;

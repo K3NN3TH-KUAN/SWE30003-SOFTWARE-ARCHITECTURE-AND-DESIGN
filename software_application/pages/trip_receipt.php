@@ -9,6 +9,9 @@ require_once '../classes/Account.php';
 require_once '../classes/Notification.php';
 require_once '../classes/Point.php';
 require_once '../classes/PointRedemption.php';
+require_once '../classes/Database.php';
+$database = new Database();
+$db = $database->getConnection();
 
 if (!isset($_SESSION['accountID'])) {
     header('Location: login.php');
@@ -55,7 +58,7 @@ $tripDetails = $trip->getTripByID($tripID);
 $account = new Account();
 $accountInfo = $account->getAccountByID($accountID);
 
-$promotion = new Promotion();
+$promotion = new Promotion($db);
 $pointRedemption = new PointRedemption();
 
 $discountRate = 0;
@@ -144,7 +147,7 @@ $qrImagePath = "../assets/images/qrcode.png";
                 </tr>
                 <!-- Merchandise Lines -->
                 <?php 
-                $merchandise = new Merchandise();
+                $merchandise = new Merchandise($db);
                 foreach ($lineItems as $item) {
                     if ($item['type'] === 'Merchandise' && $item['merchandiseID']) {
                         $merch = $merchandise->getMerchandiseByID($item['merchandiseID']);

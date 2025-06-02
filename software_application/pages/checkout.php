@@ -3,8 +3,11 @@ session_start();
 require_once '../classes/Promotion.php';
 require_once '../classes/PointRedemption.php';
 require_once '../classes/Account.php';
+require_once '../classes/Database.php';
+$database = new Database();
+$db = $database->getConnection();
 
-$promotion = new Promotion();
+$promotion = new Promotion($db);
 $pointRedemption = new PointRedemption();
 $account = new Account();
 

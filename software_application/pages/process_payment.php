@@ -9,6 +9,8 @@ require_once '../classes/Point.php';
 require_once '../classes/Promotion.php';
 require_once '../classes/PointRedemption.php';
 require_once '../classes/Database.php';
+$database = new Database();
+$db = $database->getConnection();
 
 if (!isset($_SESSION['accountID']) || !isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
     header('Location: cart.php');
@@ -18,10 +20,10 @@ if (!isset($_SESSION['accountID']) || !isset($_SESSION['cart']) || empty($_SESSI
 $account = new Account();
 $sale = new Sale();
 $lineOfSale = new LineOfSale();
-$merchandise = new Merchandise();
-$notification = new Notification();
+$merchandise = new Merchandise($db);
+$notification = new Notification($db);
 $point = new Point();
-$promotion = new Promotion();
+$promotion = new Promotion($db);
 $pointRedemption = new PointRedemption();
 
 $accountID = $_SESSION['accountID'];
@@ -206,4 +208,4 @@ try {
     header('Location: payment_status.php');
     exit();
 }
-?> 
+ 

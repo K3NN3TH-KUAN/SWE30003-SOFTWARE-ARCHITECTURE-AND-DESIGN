@@ -1,5 +1,11 @@
 <?php
 class Feedback {
+    private $db;
+
+    public function __construct($db) {
+        $this->db = $db;
+    }
+
     public $feedbackID;
     public $accountID;
     public $adminID;

@@ -1,6 +1,9 @@
 <?php
 session_start();
 require_once '../classes/Merchandise.php';
+require_once '../classes/Database.php';
+$database = new Database();
+$db = $database->getConnection();
 
 if (!isset($_SESSION['accountID'])) {
     header('Location: login.php');
@@ -9,7 +12,7 @@ if (!isset($_SESSION['accountID'])) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['merchandiseID'])) {
     $merchandiseID = $_POST['merchandiseID'];
-    $merchandise = new Merchandise();
+    $merchandise = new Merchandise($db);
     $item = $merchandise->getMerchandiseByID($merchandiseID);
 
     if ($item && $item['stockQuantity'] > 0) {
@@ -46,4 +49,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['merchandiseID'])) {
 
 header('Location: merchandise.php');
 exit();
-?> 

@@ -64,17 +64,27 @@ foreach ($trips as $trip) {
     ];
 }
 
-// Find most and least popular routes
-$mostPopular = null;
-$leastPopular = null;
-foreach ($routeStats as $route => $data) {
-    if ($mostPopular === null || $data['totalPassengers'] > $routeStats[$mostPopular]['totalPassengers']) {
-        $mostPopular = $route;
-    }
-    if ($leastPopular === null || $data['totalPassengers'] < $routeStats[$leastPopular]['totalPassengers']) {
-        $leastPopular = $route;
-    }
-}
+// Most Popular Route
+$sql = "SELECT t.origin, t.destination, COUNT(tb.bookingID) as passengers 
+        FROM trip t 
+        LEFT JOIN trip_booking tb ON t.tripID = tb.tripID 
+        WHERE tb.bookingStatus = 'Booked'
+        GROUP BY t.origin, t.destination 
+        ORDER BY passengers DESC 
+        LIMIT 1";
+$result = $db->query($sql);
+$mostPopular = $result->fetch(PDO::FETCH_ASSOC);
+
+// Least Popular Route
+$sql = "SELECT t.origin, t.destination, COUNT(tb.bookingID) as passengers 
+        FROM trip t 
+        LEFT JOIN trip_booking tb ON t.tripID = tb.tripID 
+        WHERE tb.bookingStatus = 'Booked'
+        GROUP BY t.origin, t.destination 
+        ORDER BY passengers ASC 
+        LIMIT 1";
+$result = $db->query($sql);
+$leastPopular = $result->fetch(PDO::FETCH_ASSOC);
 
 // Prepare data for chart
 $chartLabels = [];
@@ -222,13 +232,11 @@ if (isset($_POST['generate_report'])) {
                     <h5 class="mb-3"><i class="bi bi-graph-up"></i> Route Performance</h5>
                     <p class="mb-2">
                         <span class="highlight">Most Popular Route:</span><br>
-                        <?= htmlspecialchars($mostPopular) ?> 
-                        <small class="text-muted">(<?= $routeStats[$mostPopular]['totalPassengers'] ?> passengers)</small>
+                        <?= htmlspecialchars($mostPopular ? "{$mostPopular['origin']} to {$mostPopular['destination']} ({$mostPopular['passengers']} passengers)" : "No bookings yet") ?>
                     </p>
                     <p class="mb-0">
                         <span class="highlight">Least Popular Route:</span><br>
-                        <?= htmlspecialchars($leastPopular) ?>
-                        <small class="text-muted">(<?= $routeStats[$leastPopular]['totalPassengers'] ?> passengers)</small>
+                        <?= htmlspecialchars($leastPopular ? "{$leastPopular['origin']} to {$leastPopular['destination']} ({$leastPopular['passengers']} passengers)" : "No bookings yet") ?>
                     </p>
                 </div>
             </div>
@@ -284,6 +292,17 @@ if (isset($_POST['generate_report'])) {
         </div>
     </div>
 </div>
+<footer class="bg-light text-center text-lg-start mt-5 border-top shadow-sm">
+        <div class="container py-3">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <span class="mx-2">@Group_21 (A3)</span>
+                    <span class="mx-2">|</span>
+                    Kuching ART Website &copy; <?php echo date('Y'); ?>. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
 
 <script>
 const ctx = document.getElementById('routeChart').getContext('2d');

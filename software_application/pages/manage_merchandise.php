@@ -1,8 +1,11 @@
 <?php
 session_start();
+require_once '../classes/Database.php';
 require_once '../classes/Merchandise.php';
+$database = new Database();
+$db = $database->getConnection();
 
-$merchandise = new Merchandise();
+$merchandise = new Merchandise($db);
 $message = '';
 $error = '';
 
@@ -86,11 +89,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $database = new Database();
                     $db = $database->getConnection();
                     
-                    $sql = "INSERT INTO merchandise (merchandiseName, merchandisePrice, merchandiseDescription, 
-                            stockQuantity, merchandiseCategory, merchandiseImage) 
-                            VALUES (?, ?, ?, ?, ?, ?)";
+                    $adminID = $_SESSION['adminID']; // Get the current admin's ID
+                    $sql = "INSERT INTO merchandise (adminID, merchandiseName, merchandisePrice, merchandiseDescription, stockQuantity, quantity, merchandiseCategory, merchandiseImage) 
+                            VALUES (?, ?, ?, ?, ?, 0, ?, ?)";
                     
                     $params = [
+                        $adminID,
                         $_POST['merchandiseName'],
                         $_POST['merchandisePrice'],
                         $_POST['merchandiseDescription'],
@@ -168,28 +172,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $database = new Database();
                     $db = $database->getConnection();
                     
+                    // Start transaction
+                    $db->beginTransaction();
+                    
                     // First get the image filename
                     $stmt = $db->prepare("SELECT merchandiseImage FROM merchandise WHERE merchandiseID = ?");
                     $stmt->execute([$_POST['merchandiseID']]);
                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
                     
+                    // Delete related records from line_of_sale first
+                    $stmt = $db->prepare("DELETE FROM line_of_sale WHERE merchandiseID = ?");
+                    $stmt->execute([$_POST['merchandiseID']]);
+                    
+                    // Then delete the merchandise record
+                    $stmt = $db->prepare("DELETE FROM merchandise WHERE merchandiseID = ?");
+                    $stmt->execute([$_POST['merchandiseID']]);
+                    
+                    // If database operations successful, delete the image file
                     if ($result) {
-                        // Delete the image file
                         $imagePath = "../assets/images/merchandise/" . $result['merchandiseImage'];
                         if (file_exists($imagePath)) {
                             unlink($imagePath);
                         }
                     }
                     
-                    // Delete the database record
-                    $stmt = $db->prepare("DELETE FROM merchandise WHERE merchandiseID = ?");
-                    if ($stmt->execute([$_POST['merchandiseID']])) {
-                        $message = "Merchandise deleted successfully!";
-                    } else {
-                        throw new Exception("Error deleting merchandise");
-                    }
+                    // Commit the transaction
+                    $db->commit();
+                    $message = "Merchandise and related records deleted successfully!";
                 } catch (Exception $e) {
-                    $error = $e->getMessage();
+                    // Rollback the transaction if any error occurs
+                    $db->rollBack();
+                    $error = "Error deleting merchandise: " . $e->getMessage();
                 }
                 break;
         }
@@ -304,6 +317,17 @@ $allMerchandise = $merchandise->getAllMerchandise();
             </table>
         </div>
     </div>
+    <footer class="bg-light text-center text-lg-start mt-5 border-top shadow-sm">
+        <div class="container py-3">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <span class="mx-2">@Group_21 (A3)</span>
+                    <span class="mx-2">|</span>
+                    Kuching ART Website &copy; <?php echo date('Y'); ?>. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <!-- Add Merchandise Modal -->
     <div class="modal fade" id="addMerchandiseModal" tabindex="-1">

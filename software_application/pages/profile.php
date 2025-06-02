@@ -1,6 +1,10 @@
 <?php
 require_once '../classes/Account.php';
 require_once '../classes/Notification.php';
+require_once '../classes/Database.php';
+$database = new Database();
+$db = $database->getConnection();
+
 session_start();
 if (!isset($_SESSION['user'])) {
     header('Location: login.php');
@@ -30,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user'] = $user;
             $message = "Profile updated successfully.";
             if (!empty($changedFields)) {
-                $notification = new Notification();
+                $notification = new Notification($db);
                 $fieldsList = implode(', ', $changedFields);
                 $notification->createNotification(
                     $user['accountID'],
@@ -42,18 +46,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = "Failed to update profile.";
         }
     }
-    if (isset($_POST['uploadIdentity']) && isset($_FILES['identityDocument']) && $_FILES['identityDocument']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = '../uploads/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-        $fileName = basename($_FILES['identityDocument']['name']);
-        $targetFile = $uploadDir . uniqid('identity_') . '_' . $fileName;
-        if (move_uploaded_file($_FILES['identityDocument']['tmp_name'], $targetFile)) {
-            $account->uploadIdentity($user['accountID'], $targetFile);
+    if (isset($_POST['uploadIdentity']) && isset($_FILES['identityDocument'])) {
+        $filename = uniqid('identity_') . '_' . basename($_FILES['identityDocument']['name']);
+        $targetPath = '../uploads/' . $filename;
+        if (move_uploaded_file($_FILES['identityDocument']['tmp_name'], $targetPath)) {
+            // Store only the filename
+            $stmt = $db->prepare("UPDATE account SET identityDocument = ? WHERE accountID = ?");
+            $stmt->execute([$filename, $user['accountID']]);
             $user = $account->getAccountByID($user['accountID']);
             $_SESSION['user'] = $user;
             $identityUploaded = true;
             $message = "Identity document uploaded successfully. Awaiting admin review.";
-            $notification = new Notification();
+            $notification = new Notification($db);
             $notification->createNotification($user['accountID'], 'Your identity document was uploaded and is pending review.', 'feedback');
         } else {
             $message = "Failed to upload identity document.";
@@ -223,7 +227,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php if (!empty($user['identityDocument'])): ?>
                             <div class="mb-3">
                                 <label class="form-label">Uploaded Document:</label><br>
-                                <img src="<?php echo htmlspecialchars($user['identityDocument']); ?>" class="identity-preview" alt="Identity Document">
+                                <?php
+                                $filename = $user['identityDocument'];
+                                $fileUrl = "../uploads/" . rawurlencode($filename);
+                                ?>
+                                <img src="<?php echo $fileUrl; ?>" class="identity-preview" alt="Identity Document">
                             </div>
                         <?php endif; ?>
                         <div class="mb-3">
@@ -269,6 +277,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </div>
+    <footer class="bg-light text-center text-lg-start mt-5 border-top shadow-sm">
+        <div class="container py-3">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <span class="mx-2">@Group_21 (A3)</span>
+                    <span class="mx-2">|</span>
+                    Kuching ART Website &copy; <?php echo date('Y'); ?>. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

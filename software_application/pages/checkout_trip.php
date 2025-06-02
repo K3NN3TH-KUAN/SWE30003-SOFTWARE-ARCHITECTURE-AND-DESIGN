@@ -5,6 +5,9 @@ require_once '../classes/Promotion.php';
 require_once '../classes/Account.php';
 require_once '../classes/Point.php';
 require_once '../classes/Merchandise.php';
+require_once '../classes/Database.php';
+$database = new Database();
+$db = $database->getConnection();
 
 if (!isset($_SESSION['accountID'])) {
     header('Location: login.php');
@@ -18,10 +21,10 @@ if (!isset($_SESSION['selected_trip'])) {
 }
 
 $trip = new Trip();
-$promotion = new Promotion();
+$promotion = new Promotion($db);
 $account = new Account();
 $point = new Point();
-$merchandise = new Merchandise();
+$merchandise = new Merchandise($db);
 
 $accountID = $_SESSION['accountID'];
 $tripID = $_SESSION['selected_trip'];

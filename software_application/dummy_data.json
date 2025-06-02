@@ -1,0 +1,766 @@
+{
+    "admins": [
+        {
+            "adminRole": "system admin",
+            "adminName": "Kenneth",
+            "adminPhoneNumber": "0123456789",
+            "adminEmail": "kenneth@example.com",
+            "adminPassword": "admin"
+        },
+        {
+            "adminRole": "feedback coordinator",
+            "adminName": "Joey",
+            "adminPhoneNumber": "0198765432",
+            "adminEmail": "bob@example.com",
+            "adminPassword": "admin"
+        },
+        {
+            "adminRole": "promotion coordinator",
+            "adminName": "Kylie",
+            "adminPhoneNumber": "0171234567",
+            "adminEmail": "carol@example.com",
+            "adminPassword": "admin"
+        },
+        {
+            "adminRole": "merchandise coordinator",
+            "adminName": "Alvin",
+            "adminPhoneNumber": "0182345678",
+            "adminEmail": "david@example.com",
+            "adminPassword": "admin"
+        }
+    ],
+    "merchandise": [
+        {
+            "adminID": 4,
+            "merchandiseName": "ART Kuching T-shirt",
+            "merchandisePrice": 39.90,
+            "merchandiseDescription": "Official ART Kuching branded cotton T-shirt. Comfortable and stylish for daily wear.",
+            "stockQuantity": 100,
+            "quantity": 0,
+            "merchandiseCategory": "Apparel",
+            "merchandiseImage": "tshirt.png"
+        },
+        {
+            "adminID": 4,
+            "merchandiseName": "ART Kuching Cap",
+            "merchandisePrice": 25.00,
+            "merchandiseDescription": "Keep cool and show your support with this ART Kuching cap.",
+            "stockQuantity": 80,
+            "quantity": 0,
+            "merchandiseCategory": "Apparel",
+            "merchandiseImage": "cap.png"
+        },
+        {
+            "adminID": 4,
+            "merchandiseName": "ART Kuching Water Bottle",
+            "merchandisePrice": 18.50,
+            "merchandiseDescription": "Stay hydrated with this eco-friendly ART Kuching water bottle.",
+            "stockQuantity": 120,
+            "quantity": 0,
+            "merchandiseCategory": "Accessories",
+            "merchandiseImage": "bottle.png"
+        },
+        {
+            "adminID": 4,
+            "merchandiseName": "ART Kuching Lanyard",
+            "merchandisePrice": 8.00,
+            "merchandiseDescription": "Perfect for your ART card or keys. Durable and stylish.",
+            "stockQuantity": 200,
+            "quantity": 0,
+            "merchandiseCategory": "Accessories",
+            "merchandiseImage": "lanyard.png"
+        },
+        {
+            "adminID": 4,
+            "merchandiseName": "ART Kuching Tote Bag",
+            "merchandisePrice": 15.00,
+            "merchandiseDescription": "Reusable tote bag with ART Kuching logo. Great for shopping or daily use.",
+            "stockQuantity": 90,
+            "quantity": 0,
+            "merchandiseCategory": "Bags",
+            "merchandiseImage": "totebag.png"
+        },
+        {
+            "adminID": 4,
+            "merchandiseName": "ART Kuching Keychain",
+            "merchandisePrice": 5.00,
+            "merchandiseDescription": "Cute ART Kuching train keychain for your keys or bag.",
+            "stockQuantity": 300,
+            "quantity": 4,
+            "merchandiseCategory": "Souvenir",
+            "merchandiseImage": "keychain.png"
+        },
+        {
+            "adminID": 4,
+            "merchandiseName": "ART Kuching Mug",
+            "merchandisePrice": 22.00,
+            "merchandiseDescription": "Enjoy your drinks in this exclusive ART Kuching mug.",
+            "stockQuantity": 60,
+            "quantity": 0,
+            "merchandiseCategory": "Homeware",
+            "merchandiseImage": "mug.png"
+        },
+        {
+            "adminID": 4,
+            "merchandiseName": "ART Kuching Mini Model",
+            "merchandisePrice": 49.90,
+            "merchandiseDescription": "Collectible mini model of the ART Kuching train.",
+            "stockQuantity": 40,
+            "quantity": 0,
+            "merchandiseCategory": "Collectibles",
+            "merchandiseImage": "model.png"
+        }
+    ],
+    "promotions": [
+        {
+            "discountRate": 10,
+            "adminID": 3,
+            "startDate": "2024-03-01",
+            "expireDate": "2026-06-30",
+            "promotionQuantity": 10,
+            "promotionType": "Promotion"
+        },
+        {
+            "discountRate": 15,
+            "adminID": 3,
+            "startDate": "2024-03-01",
+            "expireDate": "2026-05-31",
+            "promotionQuantity": 10,
+            "promotionType": "Voucher"
+        },
+        {
+            "discountRate": 20,
+            "adminID": 3,
+            "startDate": "2024-03-01",
+            "expireDate": "2026-07-31",
+            "promotionQuantity": 10,
+            "promotionType": "Promotion"
+        },
+        {
+            "discountRate": 25,
+            "adminID": 3,
+            "startDate": "2024-03-01",
+            "expireDate": "2026-08-31",
+            "promotionQuantity": 10,
+            "promotionType": "Voucher"
+        },
+        {
+            "discountRate": 30,
+            "adminID": 3,
+            "startDate": "2024-03-01",
+            "expireDate": "2026-09-30",
+            "promotionQuantity": 10,
+            "promotionType": "Promotion"
+        },
+        {
+            "discountRate": 35,
+            "adminID": 3,
+            "startDate": "2024-03-01",
+            "expireDate": "2026-10-30",
+            "promotionQuantity": 10,
+            "promotionType": "Voucher"
+        }
+    ],
+    "trips": [
+        {
+            "tripDate": "2025-07-01",
+            "tripTime": "08:00:00",
+            "origin": "Kuching Sentral",
+            "destination": "Pending",
+            "totalAmount": 5.00,
+            "tripStatus": "Available",
+            "maxSeats": 40,
+            "availableSeats": 40
+        },
+        {
+            "tripDate": "2025-07-01",
+            "tripTime": "09:00:00",
+            "origin": "Pending",
+            "destination": "Kuching Sentral",
+            "totalAmount": 5.00,
+            "tripStatus": "Available",
+            "maxSeats": 35,
+            "availableSeats": 35
+        },
+        {
+            "tripDate": "2025-07-01",
+            "tripTime": "10:00:00",
+            "origin": "Kuching Sentral",
+            "destination": "Samarahan",
+            "totalAmount": 7.00,
+            "tripStatus": "Available",
+            "maxSeats": 30,
+            "availableSeats": 30
+        },
+        {
+            "tripDate": "2025-07-01",
+            "tripTime": "11:00:00",
+            "origin": "Samarahan",
+            "destination": "Kuching Sentral",
+            "totalAmount": 7.00,
+            "tripStatus": "Available",
+            "maxSeats": 25,
+            "availableSeats": 25
+        },
+        {
+            "tripDate": "2025-07-02",
+            "tripTime": "08:30:00",
+            "origin": "Kuching Sentral",
+            "destination": "Pending",
+            "totalAmount": 5.00,
+            "tripStatus": "Available",
+            "maxSeats": 40,
+            "availableSeats": 40
+        },
+        {
+            "tripDate": "2025-07-02",
+            "tripTime": "09:30:00",
+            "origin": "Pending",
+            "destination": "Kuching Sentral",
+            "totalAmount": 5.00,
+            "tripStatus": "Available",
+            "maxSeats": 38,
+            "availableSeats": 38
+        },
+        {
+            "tripDate": "2025-07-02",
+            "tripTime": "10:30:00",
+            "origin": "Kuching Sentral",
+            "destination": "Samarahan",
+            "totalAmount": 7.00,
+            "tripStatus": "Available",
+            "maxSeats": 36,
+            "availableSeats": 36
+        },
+        {
+            "tripDate": "2025-07-02",
+            "tripTime": "11:30:00",
+            "origin": "Samarahan",
+            "destination": "Kuching Sentral",
+            "totalAmount": 7.00,
+            "tripStatus": "Available",
+            "maxSeats": 34,
+            "availableSeats": 34
+        },
+        {
+            "tripDate": "2025-07-03",
+            "tripTime": "08:00:00",
+            "origin": "Kuching Sentral",
+            "destination": "Pending",
+            "totalAmount": 5.00,
+            "tripStatus": "Available",
+            "maxSeats": 40,
+            "availableSeats": 40
+        },
+        {
+            "tripDate": "2025-07-03",
+            "tripTime": "09:00:00",
+            "origin": "Pending",
+            "destination": "Kuching Sentral",
+            "totalAmount": 5.00,
+            "tripStatus": "Available",
+            "maxSeats": 40,
+            "availableSeats": 40
+        }
+    ],
+    "accounts": [
+        {
+            "accountName": "John Smith",
+            "phoneNumber": "0123456789",
+            "password": "password123",
+            "email": "john.smith@email.com",
+            "accountBalance": 150.00,
+            "accountStatus": "active",
+            "accountVerifyStatus": "verified"
+        },
+        {
+            "accountName": "Sarah Johnson",
+            "phoneNumber": "0134567890",
+            "password": "password123",
+            "email": "sarah.j@email.com",
+            "accountBalance": 75.50,
+            "accountStatus": "active",
+            "accountVerifyStatus": "verified"
+        },
+        {
+            "accountName": "Michael Chen",
+            "phoneNumber": "0145678901",
+            "password": "password123",
+            "email": "m.chen@email.com",
+            "accountBalance": 200.00,
+            "accountStatus": "active",
+            "accountVerifyStatus": "pending"
+        },
+        {
+            "accountName": "Emma Wilson",
+            "phoneNumber": "0156789012",
+            "password": "password123",
+            "email": "emma.w@email.com",
+            "accountBalance": 50.00,
+            "accountStatus": "active",
+            "accountVerifyStatus": "verified"
+        },
+        {
+            "accountName": "David Brown",
+            "phoneNumber": "0167890123",
+            "password": "password123",
+            "email": "d.brown@email.com",
+            "accountBalance": 300.00,
+            "accountStatus": "active",
+            "accountVerifyStatus": "verified"
+        },
+        {
+            "accountName": "Lisa Wong",
+            "phoneNumber": "0178901234",
+            "password": "password123",
+            "email": "l.wong@email.com",
+            "accountBalance": 125.75,
+            "accountStatus": "active",
+            "accountVerifyStatus": "pending"
+        },
+        {
+            "accountName": "James Lee",
+            "phoneNumber": "0189012345",
+            "password": "password123",
+            "email": "j.lee@email.com",
+            "accountBalance": 80.00,
+            "accountStatus": "active",
+            "accountVerifyStatus": "verified"
+        },
+        {
+            "accountName": "Maria Garcia",
+            "phoneNumber": "0190123456",
+            "password": "password123",
+            "email": "m.garcia@email.com",
+            "accountBalance": 250.00,
+            "accountStatus": "active",
+            "accountVerifyStatus": "verified"
+        },
+        {
+            "accountName": "Robert Taylor",
+            "phoneNumber": "0112345678",
+            "password": "password123",
+            "email": "r.taylor@email.com",
+            "accountBalance": 175.25,
+            "accountStatus": "active",
+            "accountVerifyStatus": "pending"
+        },
+        {
+            "accountName": "Sophie Anderson",
+            "phoneNumber": "0123456780",
+            "password": "password123",
+            "email": "s.anderson@email.com",
+            "accountBalance": 90.00,
+            "accountStatus": "active",
+            "accountVerifyStatus": "verified"
+        }
+    ],
+    "sales": [
+        {
+            "accountID": 1,
+            "promotionID": null,
+            "redemptionID": null,
+            "saleDate": "2024-03-15",
+            "saleTime": "10:30:00",
+            "lineOfSaleQuantity": 1,
+            "lineOfSaleAmount": 5.00,
+            "totalAmountPay": 5.00,
+            "saleStatus": "Completed"
+        },
+        {
+            "accountID": 2,
+            "promotionID": 1,
+            "redemptionID": null,
+            "saleDate": "2024-03-15",
+            "saleTime": "11:15:00",
+            "lineOfSaleQuantity": 1,
+            "lineOfSaleAmount": 4.50,
+            "totalAmountPay": 4.50,
+            "saleStatus": "Completed"
+        },
+        {
+            "accountID": 3,
+            "promotionID": null,
+            "redemptionID": null,
+            "saleDate": "2024-03-16",
+            "saleTime": "09:45:00",
+            "lineOfSaleQuantity": 1,
+            "lineOfSaleAmount": 7.00,
+            "totalAmountPay": 7.00,
+            "saleStatus": "Completed"
+        },
+        {
+            "accountID": 4,
+            "promotionID": 2,
+            "redemptionID": null,
+            "saleDate": "2024-03-16",
+            "saleTime": "14:20:00",
+            "lineOfSaleQuantity": 1,
+            "lineOfSaleAmount": 4.25,
+            "totalAmountPay": 4.25,
+            "saleStatus": "Completed"
+        },
+        {
+            "accountID": 5,
+            "promotionID": null,
+            "redemptionID": null,
+            "saleDate": "2024-03-17",
+            "saleTime": "08:30:00",
+            "lineOfSaleQuantity": 1,
+            "lineOfSaleAmount": 5.00,
+            "totalAmountPay": 5.00,
+            "saleStatus": "Completed"
+        },
+        {
+            "accountID": 6,
+            "promotionID": 3,
+            "redemptionID": null,
+            "saleDate": "2024-03-17",
+            "saleTime": "13:15:00",
+            "lineOfSaleQuantity": 1,
+            "lineOfSaleAmount": 5.60,
+            "totalAmountPay": 5.60,
+            "saleStatus": "Completed"
+        },
+        {
+            "accountID": 7,
+            "promotionID": null,
+            "redemptionID": null,
+            "saleDate": "2024-03-18",
+            "saleTime": "10:00:00",
+            "lineOfSaleQuantity": 1,
+            "lineOfSaleAmount": 7.00,
+            "totalAmountPay": 7.00,
+            "saleStatus": "Completed"
+        },
+        {
+            "accountID": 8,
+            "promotionID": 4,
+            "redemptionID": null,
+            "saleDate": "2024-03-18",
+            "saleTime": "15:45:00",
+            "lineOfSaleQuantity": 1,
+            "lineOfSaleAmount": 3.75,
+            "totalAmountPay": 3.75,
+            "saleStatus": "Completed"
+        },
+        {
+            "accountID": 9,
+            "promotionID": null,
+            "redemptionID": null,
+            "saleDate": "2024-03-19",
+            "saleTime": "09:30:00",
+            "lineOfSaleQuantity": 1,
+            "lineOfSaleAmount": 5.00,
+            "totalAmountPay": 5.00,
+            "saleStatus": "Completed"
+        },
+        {
+            "accountID": 10,
+            "promotionID": 5,
+            "redemptionID": null,
+            "saleDate": "2024-03-19",
+            "saleTime": "16:20:00",
+            "lineOfSaleQuantity": 1,
+            "lineOfSaleAmount": 3.50,
+            "totalAmountPay": 3.50,
+            "saleStatus": "Completed"
+        }
+    ],
+    "trip_bookings": [
+        {
+            "saleID": 1,
+            "tripID": 1,
+            "accountID": 1,
+            "bookingStatus": "Booked",
+            "originalTripID": null,
+            "rescheduledTripID": null,
+            "bookingDate": "2024-03-15 10:30:00",
+            "refundAmount": 0,
+            "refundDate": null,
+            "refundTime": null,
+            "originalBookingID": null
+        },
+        {
+            "saleID": 2,
+            "tripID": 2,
+            "accountID": 2,
+            "bookingStatus": "Booked",
+            "originalTripID": null,
+            "rescheduledTripID": null,
+            "bookingDate": "2024-03-15 11:15:00",
+            "refundAmount": 0,
+            "refundDate": null,
+            "refundTime": null,
+            "originalBookingID": null
+        },
+        {
+            "saleID": 3,
+            "tripID": 3,
+            "accountID": 3,
+            "bookingStatus": "Booked",
+            "originalTripID": null,
+            "rescheduledTripID": null,
+            "bookingDate": "2024-03-16 09:45:00",
+            "refundAmount": 0,
+            "refundDate": null,
+            "refundTime": null,
+            "originalBookingID": null
+        },
+        {
+            "saleID": 4,
+            "tripID": 4,
+            "accountID": 4,
+            "bookingStatus": "Booked",
+            "originalTripID": null,
+            "rescheduledTripID": null,
+            "bookingDate": "2024-03-16 14:20:00",
+            "refundAmount": 0,
+            "refundDate": null,
+            "refundTime": null,
+            "originalBookingID": null
+        },
+        {
+            "saleID": 5,
+            "tripID": 5,
+            "accountID": 5,
+            "bookingStatus": "Booked",
+            "originalTripID": null,
+            "rescheduledTripID": null,
+            "bookingDate": "2024-03-17 08:30:00",
+            "refundAmount": 0,
+            "refundDate": null,
+            "refundTime": null,
+            "originalBookingID": null
+        },
+        {
+            "saleID": 6,
+            "tripID": 6,
+            "accountID": 6,
+            "bookingStatus": "Booked",
+            "originalTripID": null,
+            "rescheduledTripID": null,
+            "bookingDate": "2024-03-17 13:15:00",
+            "refundAmount": 0,
+            "refundDate": null,
+            "refundTime": null,
+            "originalBookingID": null
+        },
+        {
+            "saleID": 7,
+            "tripID": 7,
+            "accountID": 7,
+            "bookingStatus": "Booked",
+            "originalTripID": null,
+            "rescheduledTripID": null,
+            "bookingDate": "2024-03-18 10:00:00",
+            "refundAmount": 0,
+            "refundDate": null,
+            "refundTime": null,
+            "originalBookingID": null
+        },
+        {
+            "saleID": 8,
+            "tripID": 8,
+            "accountID": 8,
+            "bookingStatus": "Booked",
+            "originalTripID": null,
+            "rescheduledTripID": null,
+            "bookingDate": "2024-03-18 15:45:00",
+            "refundAmount": 0,
+            "refundDate": null,
+            "refundTime": null,
+            "originalBookingID": null
+        },
+        {
+            "saleID": 9,
+            "tripID": 9,
+            "accountID": 9,
+            "bookingStatus": "Booked",
+            "originalTripID": null,
+            "rescheduledTripID": null,
+            "bookingDate": "2024-03-19 09:30:00",
+            "refundAmount": 0,
+            "refundDate": null,
+            "refundTime": null,
+            "originalBookingID": null
+        },
+        {
+            "saleID": 10,
+            "tripID": 10,
+            "accountID": 10,
+            "bookingStatus": "Booked",
+            "originalTripID": null,
+            "rescheduledTripID": null,
+            "bookingDate": "2024-03-19 16:20:00",
+            "refundAmount": 0,
+            "refundDate": null,
+            "refundTime": null,
+            "originalBookingID": null
+        }
+    ],
+    "line_of_sales": [
+        {
+            "saleID": 1,
+            "type": "Trip",
+            "tripID": 1,
+            "merchandiseID": null,
+            "itemQuantity": 1,
+            "itemAmount": 5.00,
+            "totalAmountPerLineOfSale": 5.00
+        },
+        {
+            "saleID": 2,
+            "type": "Trip",
+            "tripID": 2,
+            "merchandiseID": null,
+            "itemQuantity": 1,
+            "itemAmount": 4.50,
+            "totalAmountPerLineOfSale": 4.50
+        },
+        {
+            "saleID": 3,
+            "type": "Trip",
+            "tripID": 3,
+            "merchandiseID": null,
+            "itemQuantity": 1,
+            "itemAmount": 7.00,
+            "totalAmountPerLineOfSale": 7.00
+        },
+        {
+            "saleID": 4,
+            "type": "Trip",
+            "tripID": 4,
+            "merchandiseID": null,
+            "itemQuantity": 1,
+            "itemAmount": 4.25,
+            "totalAmountPerLineOfSale": 4.25
+        },
+        {
+            "saleID": 5,
+            "type": "Trip",
+            "tripID": 5,
+            "merchandiseID": null,
+            "itemQuantity": 1,
+            "itemAmount": 5.00,
+            "totalAmountPerLineOfSale": 5.00
+        },
+        {
+            "saleID": 6,
+            "type": "Trip",
+            "tripID": 6,
+            "merchandiseID": null,
+            "itemQuantity": 1,
+            "itemAmount": 5.60,
+            "totalAmountPerLineOfSale": 5.60
+        },
+        {
+            "saleID": 7,
+            "type": "Trip",
+            "tripID": 7,
+            "merchandiseID": null,
+            "itemQuantity": 1,
+            "itemAmount": 7.00,
+            "totalAmountPerLineOfSale": 7.00
+        },
+        {
+            "saleID": 8,
+            "type": "Trip",
+            "tripID": 8,
+            "merchandiseID": null,
+            "itemQuantity": 1,
+            "itemAmount": 3.75,
+            "totalAmountPerLineOfSale": 3.75
+        },
+        {
+            "saleID": 9,
+            "type": "Trip",
+            "tripID": 9,
+            "merchandiseID": null,
+            "itemQuantity": 1,
+            "itemAmount": 5.00,
+            "totalAmountPerLineOfSale": 5.00
+        },
+        {
+            "saleID": 10,
+            "type": "Trip",
+            "tripID": 10,
+            "merchandiseID": null,
+            "itemQuantity": 1,
+            "itemAmount": 3.50,
+            "totalAmountPerLineOfSale": 3.50
+        }
+    ],
+    "feedbacks": [
+        {
+            "accountID": 1,
+            "adminID": 2,
+            "rating": 5,
+            "comment": "Excellent service! The ART system is very efficient and the staff is friendly.",
+            "feedbackStatus": "resolved"
+        },
+        {
+            "accountID": 2,
+            "adminID": 2,
+            "rating": 4,
+            "comment": "Good experience overall. The app is easy to use and booking was smooth.",
+            "feedbackStatus": "resolved"
+        },
+        {
+            "accountID": 3,
+            "adminID": null,
+            "rating": 3,
+            "comment": "The trip was okay, but there was a slight delay in departure.",
+            "feedbackStatus": "pending"
+        },
+        {
+            "accountID": 4,
+            "adminID": 2,
+            "rating": 5,
+            "comment": "Very comfortable ride and punctual service. Will definitely use again!",
+            "feedbackStatus": "resolved"
+        },
+        {
+            "accountID": 5,
+            "adminID": null,
+            "rating": 2,
+            "comment": "The air conditioning wasn't working properly during the trip.",
+            "feedbackStatus": "pending"
+        },
+        {
+            "accountID": 6,
+            "adminID": 2,
+            "rating": 4,
+            "comment": "Clean and modern facilities. The booking system is user-friendly.",
+            "feedbackStatus": "resolved"
+        },
+        {
+            "accountID": 7,
+            "adminID": null,
+            "rating": 5,
+            "comment": "Best public transportation in Kuching! Very reliable and comfortable.",
+            "feedbackStatus": "pending"
+        },
+        {
+            "accountID": 8,
+            "adminID": 2,
+            "rating": 3,
+            "comment": "The service is good but the waiting time between trips could be improved.",
+            "feedbackStatus": "resolved"
+        },
+        {
+            "accountID": 9,
+            "adminID": null,
+            "rating": 4,
+            "comment": "Great value for money. The stations are well-maintained.",
+            "feedbackStatus": "pending"
+        },
+        {
+            "accountID": 10,
+            "adminID": 2,
+            "rating": 5,
+            "comment": "Excellent customer service and very clean vehicles. Highly recommended!",
+            "feedbackStatus": "resolved"
+        }
+    ]
+} 

@@ -6,6 +6,11 @@ class Notification {
     public $notificationType;
     public $notificationDateTime;
     public $notificationStatus;
+    private $db;
+
+    public function __construct($db) {
+        $this->db = $db;
+    }
 
     public function sendPaymentConfirmation() {}
     public function notifyBookingUpdate() {}
@@ -22,48 +27,33 @@ class Notification {
     public function sendValidMessage() {}
 
     public function createNotification($accountID, $messageContent, $notificationType) {
-        require_once __DIR__ . '/Database.php';
-        $database = new Database();
-        $db = $database->getConnection();
-        $stmt = $db->prepare("INSERT INTO notification (accountID, messageContent, notificationType, notificationDateTime, notificationStatus) VALUES (?, ?, ?, NOW(), 'unread')");
+        $stmt = $this->db->prepare("INSERT INTO notification (accountID, messageContent, notificationType, notificationDateTime, notificationStatus) VALUES (?, ?, ?, NOW(), 'unread')");
         $stmt->execute([$accountID, $messageContent, $notificationType]);
     }
 
     public function getNotificationsByAccount($accountID) {
-        require_once __DIR__ . '/Database.php';
-        $database = new Database();
-        $db = $database->getConnection();
         $sql = "SELECT * FROM notification WHERE accountID = ? ORDER BY notificationDateTime DESC";
-        $stmt = $db->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$accountID]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getNotificationsByAccountID($accountID) {
-        require_once __DIR__ . '/Database.php';
-        $database = new Database();
-        $db = $database->getConnection();
         $sql = "SELECT * FROM notification WHERE accountID = ? ORDER BY notificationDateTime DESC";
-        $stmt = $db->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$accountID]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function updateNotificationStatus($notificationID, $status) {
-        require_once __DIR__ . '/Database.php';
-        $database = new Database();
-        $db = $database->getConnection();
         $sql = "UPDATE notification SET notificationStatus = ? WHERE notificationID = ?";
-        $stmt = $db->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$status, $notificationID]);
     }
 
     public function deleteNotification($notificationID) {
-        require_once __DIR__ . '/Database.php';
-        $database = new Database();
-        $db = $database->getConnection();
         $sql = "DELETE FROM notification WHERE notificationID = ?";
-        $stmt = $db->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$notificationID]);
     }
 }

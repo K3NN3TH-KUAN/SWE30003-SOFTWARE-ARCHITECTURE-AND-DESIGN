@@ -4,6 +4,10 @@ require_once '../classes/Sale.php';
 require_once '../classes/LineOfSale.php';
 require_once '../classes/Merchandise.php';
 require_once '../classes/Trip.php';
+require_once '../classes/Database.php';
+$database = new Database();
+$db = $database->getConnection();
+
 
 if (!isset($_SESSION['accountID'])) {
     header('Location: login.php');
@@ -26,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reorder_sale_id'])) {
 
     foreach ($items as $item) {
         if ($item['type'] === 'Merchandise' && !empty($item['merchandiseID'])) {
-            $merchandise = new Merchandise();
+            $merchandise = new Merchandise($db);
             $merch = $merchandise->getMerchandiseByID($item['merchandiseID']);
             if ($merch) {
                 $found = false;
@@ -210,5 +214,16 @@ $statusColors = [
             </div>
         <?php endif; ?>
     </div>
+    <footer class="bg-light text-center text-lg-start mt-5 border-top shadow-sm">
+        <div class="container py-3">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <span class="mx-2">@Group_21 (A3)</span>
+                    <span class="mx-2">|</span>
+                    Kuching ART Website &copy; <?php echo date('Y'); ?>. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

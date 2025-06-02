@@ -220,86 +220,39 @@ foreach ($table_sql as $sql) {
     }
 }
 
-// Insert 8 dummy merchandise items for Kuching ART
-$dummyMerchandise = [
-    [
-        'merchandiseName' => 'ART Kuching T-shirt',
-        'merchandisePrice' => 39.90,
-        'merchandiseDescription' => 'Official ART Kuching branded cotton T-shirt. Comfortable and stylish for daily wear.',
-        'stockQuantity' => 100,
-        'quantity' => 0,
-        'merchandiseCategory' => 'Apparel',
-        'merchandiseImage' => 'tshirt.png'
-    ],
-    [
-        'merchandiseName' => 'ART Kuching Cap',
-        'merchandisePrice' => 25.00,
-        'merchandiseDescription' => 'Keep cool and show your support with this ART Kuching cap.',
-        'stockQuantity' => 80,
-        'quantity' => 0,
-        'merchandiseCategory' => 'Apparel',
-        'merchandiseImage' => 'cap.png'
-    ],
-    [
-        'merchandiseName' => 'ART Kuching Water Bottle',
-        'merchandisePrice' => 18.50,
-        'merchandiseDescription' => 'Stay hydrated with this eco-friendly ART Kuching water bottle.',
-        'stockQuantity' => 120,
-        'quantity' => 0,
-        'merchandiseCategory' => 'Accessories',
-        'merchandiseImage' => 'bottle.png'
-    ],
-    [
-        'merchandiseName' => 'ART Kuching Lanyard',
-        'merchandisePrice' => 8.00,
-        'merchandiseDescription' => 'Perfect for your ART card or keys. Durable and stylish.',
-        'stockQuantity' => 200,
-        'quantity' => 0,
-        'merchandiseCategory' => 'Accessories',
-        'merchandiseImage' => 'lanyard.png'
-    ],
-    [
-        'merchandiseName' => 'ART Kuching Tote Bag',
-        'merchandisePrice' => 15.00,
-        'merchandiseDescription' => 'Reusable tote bag with ART Kuching logo. Great for shopping or daily use.',
-        'stockQuantity' => 90,
-        'quantity' => 0,
-        'merchandiseCategory' => 'Bags',
-        'merchandiseImage' => 'totebag.png'
-    ],
-    [
-        'merchandiseName' => 'ART Kuching Keychain',
-        'merchandisePrice' => 5.00,
-        'merchandiseDescription' => 'Cute ART Kuching train keychain for your keys or bag.',
-        'stockQuantity' => 300,
-        'quantity' => 0,
-        'merchandiseCategory' => 'Souvenir',
-        'merchandiseImage' => 'keychain.png'
-    ],
-    [
-        'merchandiseName' => 'ART Kuching Mug',
-        'merchandisePrice' => 22.00,
-        'merchandiseDescription' => 'Enjoy your drinks in this exclusive ART Kuching mug.',
-        'stockQuantity' => 60,
-        'quantity' => 0,
-        'merchandiseCategory' => 'Homeware',
-        'merchandiseImage' => 'mug.png'
-    ],
-    [
-        'merchandiseName' => 'ART Kuching Mini Model',
-        'merchandisePrice' => 49.90,
-        'merchandiseDescription' => 'Collectible mini model of the ART Kuching train.',
-        'stockQuantity' => 40,
-        'quantity' => 0,
-        'merchandiseCategory' => 'Collectibles',
-        'merchandiseImage' => 'model.png'
-    ]
-];
+// Add this at the beginning of your file after the database connection
+$jsonData = json_decode(file_get_contents('dummy_data.json'), true);
 
-foreach ($dummyMerchandise as $item) {
-    $stmt = $conn->prepare("INSERT INTO merchandise (adminID, merchandiseName, merchandisePrice, merchandiseDescription, stockQuantity, quantity, merchandiseCategory, merchandiseImage) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)");
+// Then replace your existing data arrays with the JSON data
+$dummyMerchandise = $jsonData['merchandise'];
+$dummyPromotions = $jsonData['promotions'];
+$dummyTrips = $jsonData['trips'];
+$adminData = $jsonData['admins'];
+$accountData = $jsonData['accounts'];
+
+// First, insert admin records
+foreach ($adminData as $admin) {
+    $stmt = $conn->prepare("INSERT INTO admin (adminRole, adminName, adminPhoneNumber, adminEmail, adminPassword) VALUES (?, ?, ?, ?, ?)");
+    $hashedPassword = password_hash('admin', PASSWORD_DEFAULT);
     $stmt->bind_param(
-        "sdsiiss",
+        "sssss",
+        $admin['adminRole'],
+        $admin['adminName'],
+        $admin['adminPhoneNumber'],
+        $admin['adminEmail'],
+        $hashedPassword
+    );
+    $stmt->execute();
+    $stmt->close();
+}
+
+// Then insert merchandise items
+foreach ($dummyMerchandise as $item) {
+    $stmt = $conn->prepare("INSERT INTO merchandise (adminID, merchandiseName, merchandisePrice, merchandiseDescription, stockQuantity, quantity, merchandiseCategory, merchandiseImage) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param(
+        "isdsiiss",
+        $item['adminID'],
         $item['merchandiseName'],
         $item['merchandisePrice'],
         $item['merchandiseDescription'],
@@ -312,58 +265,13 @@ foreach ($dummyMerchandise as $item) {
     $stmt->close();
 }
 
-// After your merchandise dummy data, add this:
-$dummyPromotions = [
-    [
-        'discountRate' => 10,
-        'startDate' => '2024-03-01',
-        'expireDate' => '2026-06-30',
-        'promotionQuantity' => 10,
-        'promotionType' => 'Promotion'
-    ],
-    [
-        'discountRate' => 15,
-        'startDate' => '2024-03-01',
-        'expireDate' => '2026-05-31',
-        'promotionQuantity' => 10,
-        'promotionType' => 'Voucher'
-    ],
-    [
-        'discountRate' => 20,
-        'startDate' => '2024-03-01',
-        'expireDate' => '2026-07-31',
-        'promotionQuantity' => 10,
-        'promotionType' => 'Promotion'
-    ],
-    [
-        'discountRate' => 25,
-        'startDate' => '2024-03-01',
-        'expireDate' => '2026-08-31',
-        'promotionQuantity' => 10,
-        'promotionType' => 'Voucher'
-    ],
-    [
-        'discountRate' => 30,
-        'startDate' => '2024-03-01',
-        'expireDate' => '2026-09-30',
-        'promotionQuantity' => 10,
-        'promotionType' => 'Promotion'
-    ],
-    [
-        'discountRate' => 35,
-        'startDate' => '2024-03-01',
-        'expireDate' => '2026-10-30',
-        'promotionQuantity' => 10,
-        'promotionType' => 'Voucher'
-    ],
-];
-
 // Insert dummy promotions
 foreach ($dummyPromotions as $promo) {
     $stmt = $conn->prepare("INSERT INTO promotion (adminID, discountRate, startDate, expireDate, promotionQuantity, promotionType) 
-                           VALUES (NULL, ?, ?, ?, ?, ?)");
+                           VALUES (?, ?, ?, ?, ?, ?)");
     $stmt->bind_param(
-        "dssis",
+        "idssis",
+        $promo['adminID'],
         $promo['discountRate'],
         $promo['startDate'],
         $promo['expireDate'],
@@ -373,109 +281,6 @@ foreach ($dummyPromotions as $promo) {
     $stmt->execute();
     $stmt->close();
 }
-
-$dummyTrips = [
-    [
-        'tripDate' => '2025-07-01',
-        'tripTime' => '08:00:00',
-        'origin' => 'Kuching Sentral',
-        'destination' => 'Pending',
-        'totalAmount' => 5.00,
-        'tripStatus' => 'Available',
-        'maxSeats' => 40,
-        'availableSeats' => 40
-    ],
-    [
-        'tripDate' => '2025-07-01',
-        'tripTime' => '09:00:00',
-        'origin' => 'Pending',
-        'destination' => 'Kuching Sentral',
-        'totalAmount' => 5.00,
-        'tripStatus' => 'Available',
-        'maxSeats' => 35,
-        'availableSeats' => 35
-    ],
-    [
-        'tripDate' => '2025-07-01',
-        'tripTime' => '10:00:00',
-        'origin' => 'Kuching Sentral',
-        'destination' => 'Samarahan',
-        'totalAmount' => 7.00,
-        'tripStatus' => 'Available',
-        'maxSeats' => 30,
-        'availableSeats' => 30
-    ],
-    [
-        'tripDate' => '2025-07-01',
-        'tripTime' => '11:00:00',
-        'origin' => 'Samarahan',
-        'destination' => 'Kuching Sentral',
-        'totalAmount' => 7.00,
-        'tripStatus' => 'Available',
-        'maxSeats' => 25,
-        'availableSeats' => 25
-    ],
-    [
-        'tripDate' => '2025-07-02',
-        'tripTime' => '08:30:00',
-        'origin' => 'Kuching Sentral',
-        'destination' => 'Pending',
-        'totalAmount' => 5.00,
-        'tripStatus' => 'Available',
-        'maxSeats' => 40,
-        'availableSeats' => 40
-    ],
-    [
-        'tripDate' => '2025-07-02',
-        'tripTime' => '09:30:00',
-        'origin' => 'Pending',
-        'destination' => 'Kuching Sentral',
-        'totalAmount' => 5.00,
-        'tripStatus' => 'Available',
-        'maxSeats' => 38,
-        'availableSeats' => 38
-    ],
-    [
-        'tripDate' => '2025-07-02',
-        'tripTime' => '10:30:00',
-        'origin' => 'Kuching Sentral',
-        'destination' => 'Samarahan',
-        'totalAmount' => 7.00,
-        'tripStatus' => 'Available',
-        'maxSeats' => 36,
-        'availableSeats' => 36
-    ],
-    [
-        'tripDate' => '2025-07-02',
-        'tripTime' => '11:30:00',
-        'origin' => 'Samarahan',
-        'destination' => 'Kuching Sentral',
-        'totalAmount' => 7.00,
-        'tripStatus' => 'Available',
-        'maxSeats' => 34,
-        'availableSeats' => 34
-    ],
-    [
-        'tripDate' => '2025-07-03',
-        'tripTime' => '08:00:00',
-        'origin' => 'Kuching Sentral',
-        'destination' => 'Pending',
-        'totalAmount' => 5.00,
-        'tripStatus' => 'Available',
-        'maxSeats' => 40,
-        'availableSeats' => 40
-    ],
-    [
-        'tripDate' => '2025-07-03',
-        'tripTime' => '09:00:00',
-        'origin' => 'Pending',
-        'destination' => 'Kuching Sentral',
-        'totalAmount' => 5.00,
-        'tripStatus' => 'Available',
-        'maxSeats' => 40,
-        'availableSeats' => 40
-    ],
-];
 
 foreach ($dummyTrips as $trip) {
     $stmt = $conn->prepare("INSERT INTO trip (tripDate, tripTime, origin, destination, totalAmount, tripStatus, maxSeats, availableSeats) 
@@ -495,39 +300,121 @@ foreach ($dummyTrips as $trip) {
     $stmt->close();
 }
 
-// Insert a few admin records (with password 'admin' hashed)
-$adminData = [
-    [
-        'adminRole' => 'system admin',
-        'adminName' => 'Kenneth',
-        'adminPhoneNumber' => '0123456789',
-        'adminEmail' => 'kenneth@example.com',
-        'adminPassword' => password_hash('admin', PASSWORD_DEFAULT)
-    ],
-    [
-        'adminRole' => 'feedback coordinator',
-        'adminName' => 'Bob',
-        'adminPhoneNumber' => '0198765432',
-        'adminEmail' => 'bob@example.com',
-        'adminPassword' => password_hash('admin', PASSWORD_DEFAULT)
-    ],
-    [
-        'adminRole' => 'promotion coordinator',
-        'adminName' => 'Carol',
-        'adminPhoneNumber' => '0171234567',
-        'adminEmail' => 'carol@example.com',
-        'adminPassword' => password_hash('admin', PASSWORD_DEFAULT)
-    ]
-];
-foreach ($adminData as $admin) {
-    $stmt = $conn->prepare("INSERT INTO admin (adminRole, adminName, adminPhoneNumber, adminEmail, adminPassword) VALUES (?, ?, ?, ?, ?)");
+// For accounts, you'll need to hash the passwords before inserting
+foreach ($accountData as $account) {
+    $stmt = $conn->prepare("INSERT INTO account (accountName, phoneNumber, password, email, accountBalance, accountStatus, accountVerifyStatus) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $hashedPassword = password_hash($account['password'], PASSWORD_DEFAULT);
     $stmt->bind_param(
-        "sssss",
-        $admin['adminRole'],
-        $admin['adminName'],
-        $admin['adminPhoneNumber'],
-        $admin['adminEmail'],
-        $admin['adminPassword']
+        "ssssdss",
+        $account['accountName'],
+        $account['phoneNumber'],
+        $hashedPassword,
+        $account['email'],
+        $account['accountBalance'],
+        $account['accountStatus'],
+        $account['accountVerifyStatus']
+    );
+    $stmt->execute();
+    $stmt->close();
+}
+
+// Insert sales data
+$salesData = $jsonData['sales'];
+foreach ($salesData as $sale) {
+    $promotionID = $sale['promotionID'] ?? null;
+    $redemptionID = $sale['redemptionID'] ?? null;
+    
+    $stmt = $conn->prepare("INSERT INTO sale (accountID, promotionID, redemptionID, saleDate, saleTime, lineOfSaleQuantity, lineOfSaleAmount, totalAmountPay, saleStatus) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param(
+        "iiissddds",
+        $sale['accountID'],
+        $promotionID,
+        $redemptionID,
+        $sale['saleDate'],
+        $sale['saleTime'],
+        $sale['lineOfSaleQuantity'],
+        $sale['lineOfSaleAmount'],
+        $sale['totalAmountPay'],
+        $sale['saleStatus']
+    );
+    $stmt->execute();
+    $stmt->close();
+}
+
+// Insert trip bookings
+$tripBookings = $jsonData['trip_bookings'];
+foreach ($tripBookings as $booking) {
+    $originalTripID = $booking['originalTripID'] ?? null;
+    $rescheduledTripID = $booking['rescheduledTripID'] ?? null;
+    $refundDate = $booking['refundDate'] ?? null;
+    $refundTime = $booking['refundTime'] ?? null;
+    $originalBookingID = $booking['originalBookingID'] ?? null;
+    
+    $stmt = $conn->prepare("INSERT INTO trip_booking (saleID, tripID, accountID, bookingStatus, originalTripID, rescheduledTripID, bookingDate, refundAmount, refundDate, refundTime, originalBookingID) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param(
+        "iiisssdsdsi",
+        $booking['saleID'],
+        $booking['tripID'],
+        $booking['accountID'],
+        $booking['bookingStatus'],
+        $originalTripID,
+        $rescheduledTripID,
+        $booking['bookingDate'],
+        $booking['refundAmount'],
+        $refundDate,
+        $refundTime,
+        $originalBookingID
+    );
+    $stmt->execute();
+    $stmt->close();
+}
+
+// Update trip available seats
+foreach ($tripBookings as $booking) {
+    $stmt = $conn->prepare("UPDATE trip SET availableSeats = availableSeats - 1 WHERE tripID = ?");
+    $stmt->bind_param("i", $booking['tripID']);
+    $stmt->execute();
+    $stmt->close();
+}
+
+// Insert line of sales
+$lineOfSales = $jsonData['line_of_sales'];
+foreach ($lineOfSales as $line) {
+    $merchandiseID = $line['merchandiseID'] ?? null;
+    
+    $stmt = $conn->prepare("INSERT INTO line_of_sale (saleID, type, tripID, merchandiseID, itemQuantity, itemAmount, totalAmountPerLineOfSale) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param(
+        "isiiidd",
+        $line['saleID'],
+        $line['type'],
+        $line['tripID'],
+        $merchandiseID,
+        $line['itemQuantity'],
+        $line['itemAmount'],
+        $line['totalAmountPerLineOfSale']
+    );
+    $stmt->execute();
+    $stmt->close();
+}
+
+// Insert feedback data
+$feedbacks = $jsonData['feedbacks'];
+foreach ($feedbacks as $feedback) {
+    $adminID = $feedback['adminID'] ?? null;
+    
+    $stmt = $conn->prepare("INSERT INTO feedback (accountID, adminID, rating, comment, feedbackStatus) 
+                           VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param(
+        "iiiss",
+        $feedback['accountID'],
+        $adminID,
+        $feedback['rating'],
+        $feedback['comment'],
+        $feedback['feedbackStatus']
     );
     $stmt->execute();
     $stmt->close();

@@ -8,12 +8,10 @@ class Promotion {
     public $promotionQuantity;
     public $promotionType;
     public $redeemedBy;
-    private $conn;
+    private $db;
 
-    public function __construct() {
-        require_once __DIR__ . '/Database.php';
-        $database = new Database();
-        $this->conn = $database->getConnection();
+    public function __construct($db) {
+        $this->db = $db;
     }
 
     public function createPromotion() {}
@@ -28,7 +26,7 @@ class Promotion {
     public function getAllPromotions() {
         try {
             $sql = "SELECT * FROM promotion WHERE promotionType = 'Promotion'";
-            $stmt = $this->conn->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
@@ -47,7 +45,7 @@ class Promotion {
                 $sql .= " AND promotionType = ?";
             }
             
-            $stmt = $this->conn->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             
             if ($type) {
                 $stmt->execute([$type]);
@@ -75,7 +73,7 @@ class Promotion {
             
             $sql .= " ORDER BY s.saleDate DESC";
             
-            $stmt = $this->conn->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             
             if ($type) {
                 $stmt->execute([$accountID, $type]);
@@ -92,7 +90,7 @@ class Promotion {
 
     public function redeemPromotion($promotionID, $accountID) {
         try {
-            $this->conn->beginTransaction();
+            $this->db->beginTransaction();
             
             // Check if promotion is available
             $sql = "SELECT * FROM promotion 
@@ -100,7 +98,7 @@ class Promotion {
                     AND promotionType = 'Voucher'
                     AND promotionQuantity > 0 
                     FOR UPDATE";
-            $stmt = $this->conn->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->execute([$promotionID]);
             $promotion = $stmt->fetch(PDO::FETCH_ASSOC);
             
@@ -112,13 +110,13 @@ class Promotion {
             $sql = "UPDATE promotion 
                     SET promotionQuantity = promotionQuantity - 1 
                     WHERE promotionID = ?";
-            $stmt = $this->conn->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->execute([$promotionID]);
             
-            $this->conn->commit();
+            $this->db->commit();
             return true;
         } catch (Exception $e) {
-            $this->conn->rollBack();
+            $this->db->rollBack();
             error_log("Error in redeemPromotion: " . $e->getMessage());
             return false;
         }
@@ -127,7 +125,7 @@ class Promotion {
     public function getPromotionByID($promotionID) {
         try {
             $sql = "SELECT * FROM promotion WHERE promotionID = ?";
-            $stmt = $this->conn->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->execute([$promotionID]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
@@ -137,7 +135,7 @@ class Promotion {
     }
 
     public function decrementPromotionQuantity($promotionID) {
-        $stmt = $this->conn->prepare("UPDATE promotion SET promotionQuantity = promotionQuantity - 1 WHERE promotionID = ? AND promotionQuantity > 0");
+        $stmt = $this->db->prepare("UPDATE promotion SET promotionQuantity = promotionQuantity - 1 WHERE promotionID = ? AND promotionQuantity > 0");
         $stmt->execute([$promotionID]);
     }
 
@@ -146,7 +144,7 @@ class Promotion {
             $sql = "UPDATE promotion 
                     SET promotionQuantity = promotionQuantity - 1 
                     WHERE promotionID = ? AND promotionQuantity > 0";
-            $stmt = $this->conn->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             return $stmt->execute([$promotionID]);
         } catch (PDOException $e) {
             error_log("Error in updatePromotionQuantity: " . $e->getMessage());
@@ -165,7 +163,7 @@ class Promotion {
                     AND pr.isUsed = 0
                     ORDER BY pr.redemptionDate DESC, pr.redemptionTime DESC";
             
-            $stmt = $this->conn->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->execute([$accountID]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
@@ -176,7 +174,7 @@ class Promotion {
 
     public function processRedemption($accountID, $promotionID, $pointsCost, $point, $pointRedemption) {
         try {
-            $this->conn->beginTransaction();
+            $this->db->beginTransaction();
             
             // 1. Get promotion details
             $promotionDetails = $this->getPromotionByID($promotionID);
@@ -211,13 +209,27 @@ class Promotion {
                 throw new Exception("Failed to update promotion quantity");
             }
 
-            $this->conn->commit();
+            $this->db->commit();
             return true;
         } catch (Exception $e) {
-            $this->conn->rollBack();
+            $this->db->rollBack();
             error_log("Error in processRedemption: " . $e->getMessage());
             throw $e;
         }
+    }
+
+    public function decreaseQuantity($promotionID) {
+        $sql = "UPDATE promotion SET promotionQuantity = promotionQuantity - 1 WHERE promotionID = ? AND promotionQuantity > 0";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$promotionID]);
+    }
+
+    public function getPromotionQuantity($promotionID) {
+        $sql = "SELECT promotionQuantity FROM promotion WHERE promotionID = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$promotionID]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? $result['promotionQuantity'] : 0;
     }
 }
 ?>

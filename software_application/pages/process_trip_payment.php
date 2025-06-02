@@ -8,8 +8,10 @@ require_once '../classes/Merchandise.php';
 require_once '../classes/Account.php';
 require_once '../classes/Notification.php';
 require_once '../classes/Point.php';
-require_once '../classes/Database.php';
 require_once '../classes/PointRedemption.php';
+require_once '../classes/Database.php';
+$database = new Database();
+$db = $database->getConnection();
 
 // Check if user is logged in
 if (!isset($_SESSION['accountID'])) {
@@ -36,12 +38,12 @@ $redemptionID = $_SESSION['booking_details']['redemption_id'] ?? null;
 
 $accountID = $_SESSION['accountID'];
 $trip = new Trip();
-$promotion = new Promotion();
+$promotion = new Promotion($db);
 $sale = new Sale();
 $lineOfSale = new LineOfSale();
-$merchandise = new Merchandise();
+$merchandise = new Merchandise($db);
 $account = new Account();
-$notification = new Notification();
+$notification = new Notification($db);
 $point = new Point();
 $pointRedemption = new PointRedemption();
 

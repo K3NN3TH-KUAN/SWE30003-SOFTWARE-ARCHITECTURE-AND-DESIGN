@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once '../classes/Database.php';
+$database = new Database();
+$db = $database->getConnection();
 
 // Check if admin is logged in
 if (!isset($_SESSION['adminID'])) {
@@ -242,6 +244,17 @@ $accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </form>
         </div>
     </div>
+    <footer class="bg-light text-center text-lg-start mt-5 border-top shadow-sm">
+        <div class="container py-3">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <span class="mx-2">@Group_21 (A3)</span>
+                    <span class="mx-2">|</span>
+                    Kuching ART Website &copy; <?php echo date('Y'); ?>. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <!-- Edit Account Modal -->
     <div class="modal fade" id="editAccountModal" tabindex="-1">

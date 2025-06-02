@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/Database.php';
+
 class Merchandise {
     public $merchandiseID;
     public $adminID;
@@ -9,6 +11,12 @@ class Merchandise {
     public $quantity;
     public $merchandiseCategory;
     public $merchandiseImage;
+
+    private $db;
+
+    public function __construct($db) {
+        $this->db = $db;
+    }
 
     public function manageMerchandiseDetails() {}
     public function trackStockLevels() {}
@@ -31,7 +39,11 @@ class Merchandise {
         }
     }
     public function displayMerchandiseStockLevel() {}
-    public function updateMerchandiseQuantity() {}
+    public function updateMerchandiseQuantity($merchandiseID, $newQuantity) {
+        $sql = "UPDATE merchandise SET stockQuantity = ? WHERE merchandiseID = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$newQuantity, $merchandiseID]);
+    }
     public function displayMerchandiseQuantity() {}
     public function updateStockQuantity($merchandiseID, $quantityPurchased) {
         require_once __DIR__ . '/Database.php';

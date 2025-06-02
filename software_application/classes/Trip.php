@@ -453,7 +453,7 @@ class Trip {
             $db->commit();
 
             // Create notification after transaction is committed
-            $notification = new Notification();
+            $notification = new Notification($db);
             $notification->createNotification(
                 $accountID,
                 "Your trip booking #$bookingID has been cancelled. RM" . number_format($refundAmount, 2) . " has been refunded to your account.",
