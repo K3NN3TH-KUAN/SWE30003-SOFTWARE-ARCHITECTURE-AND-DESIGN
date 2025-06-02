@@ -1,6 +1,27 @@
 <?php
-require_once '../classes/Account.php';
 session_start();
+require_once '../classes/Database.php';
+
+// First, connect to MySQL without selecting a database
+$database = new Database();
+$conn = $database->getConnectionWithoutDB();
+
+// Check if database exists
+$checkDB = $conn->query("SHOW DATABASES LIKE 'software_app_db'");
+if ($checkDB->rowCount() == 0) {
+    // If database doesn't exist, run setup
+    require_once '../setup_database.php';
+} else {
+    // If database exists, check if tables exist
+    $conn->query("USE software_app_db");
+    $checkTable = $conn->query("SHOW TABLES LIKE 'account'");
+    if ($checkTable->rowCount() == 0) {
+        // If account table doesn't exist, run setup
+        require_once '../setup_database.php';
+    }
+}
+
+require_once '../classes/Account.php';
 $message = "";
 
 if (isset($_GET['logout'])) {

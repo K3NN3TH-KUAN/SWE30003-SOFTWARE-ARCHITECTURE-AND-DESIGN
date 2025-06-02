@@ -6,15 +6,20 @@ $pass = "";
 // Connect to MySQL server
 $conn = new mysqli($host, $user, $pass);
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // Optionally log error, but do not echo or die
+    // error_log("Connection failed: " . $conn->connect_error);
+    $conn->close();
+    exit;
 }
 
 // Create database
 $sql = "CREATE DATABASE IF NOT EXISTS software_app_db";
 if ($conn->query($sql) === TRUE) {
-    echo "Database created or already exists.<br>";
+    // echo "Database created or already exists.<br>";
 } else {
-    die("Error creating database: " . $conn->error);
+    // die("Error creating database: " . $conn->error);
+    $conn->close();
+    exit;
 }
 
 // Select the database
@@ -213,213 +218,193 @@ $table_sql = [
 ];
 
 foreach ($table_sql as $sql) {
-    if ($conn->query($sql) === TRUE) {
-        echo "Table created or already exists.<br>";
-    } else {
-        echo "Error creating table: " . $conn->error . "<br>";
+    if ($conn->query($sql) !== TRUE) {
+        // Optionally log error, but do not echo or die
+        // error_log("Error creating table: " . $conn->error);
+        $conn->close();
+        exit;
     }
 }
 
-// Add this at the beginning of your file after the database connection
-$jsonData = json_decode(file_get_contents('dummy_data.json'), true);
+// Read and parse the JSON file
+$jsonFile = __DIR__ . '/dummy_data.json';
+if (file_exists($jsonFile)) {
+    $jsonData = json_decode(file_get_contents($jsonFile), true);
+    if ($jsonData === null) {
+        $conn->close();
+        exit;
+    }
 
-// Then replace your existing data arrays with the JSON data
-$dummyMerchandise = $jsonData['merchandise'];
-$dummyPromotions = $jsonData['promotions'];
-$dummyTrips = $jsonData['trips'];
-$adminData = $jsonData['admins'];
-$accountData = $jsonData['accounts'];
+    // Insert admin records
+    foreach ($jsonData['admins'] as $admin) {
+        $stmt = $conn->prepare("INSERT INTO admin (adminRole, adminName, adminPhoneNumber, adminEmail, adminPassword) VALUES (?, ?, ?, ?, ?)");
+        $hashedPassword = password_hash($admin['adminPassword'], PASSWORD_DEFAULT);
+        $stmt->bind_param(
+            "sssss",
+            $admin['adminRole'],
+            $admin['adminName'],
+            $admin['adminPhoneNumber'],
+            $admin['adminEmail'],
+            $hashedPassword
+        );
+        $stmt->execute();
+        $stmt->close();
+    }
 
-// First, insert admin records
-foreach ($adminData as $admin) {
-    $stmt = $conn->prepare("INSERT INTO admin (adminRole, adminName, adminPhoneNumber, adminEmail, adminPassword) VALUES (?, ?, ?, ?, ?)");
-    $hashedPassword = password_hash('admin', PASSWORD_DEFAULT);
-    $stmt->bind_param(
-        "sssss",
-        $admin['adminRole'],
-        $admin['adminName'],
-        $admin['adminPhoneNumber'],
-        $admin['adminEmail'],
-        $hashedPassword
-    );
-    $stmt->execute();
-    $stmt->close();
-}
+    // Insert merchandise items
+    foreach ($jsonData['merchandise'] as $item) {
+        $stmt = $conn->prepare("INSERT INTO merchandise (adminID, merchandiseName, merchandisePrice, merchandiseDescription, stockQuantity, quantity, merchandiseCategory, merchandiseImage) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param(
+            "isdsiiss",
+            $item['adminID'],
+            $item['merchandiseName'],
+            $item['merchandisePrice'],
+            $item['merchandiseDescription'],
+            $item['stockQuantity'],
+            $item['quantity'],
+            $item['merchandiseCategory'],
+            $item['merchandiseImage']
+        );
+        $stmt->execute();
+        $stmt->close();
+    }
 
-// Then insert merchandise items
-foreach ($dummyMerchandise as $item) {
-    $stmt = $conn->prepare("INSERT INTO merchandise (adminID, merchandiseName, merchandisePrice, merchandiseDescription, stockQuantity, quantity, merchandiseCategory, merchandiseImage) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param(
-        "isdsiiss",
-        $item['adminID'],
-        $item['merchandiseName'],
-        $item['merchandisePrice'],
-        $item['merchandiseDescription'],
-        $item['stockQuantity'],
-        $item['quantity'],
-        $item['merchandiseCategory'],
-        $item['merchandiseImage']
-    );
-    $stmt->execute();
-    $stmt->close();
-}
+    // Insert promotions
+    foreach ($jsonData['promotions'] as $promo) {
+        $stmt = $conn->prepare("INSERT INTO promotion (adminID, discountRate, startDate, expireDate, promotionQuantity, promotionType) 
+                               VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param(
+            "idssis",
+            $promo['adminID'],
+            $promo['discountRate'],
+            $promo['startDate'],
+            $promo['expireDate'],
+            $promo['promotionQuantity'],
+            $promo['promotionType']
+        );
+        $stmt->execute();
+        $stmt->close();
+    }
 
-// Insert dummy promotions
-foreach ($dummyPromotions as $promo) {
-    $stmt = $conn->prepare("INSERT INTO promotion (adminID, discountRate, startDate, expireDate, promotionQuantity, promotionType) 
-                           VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param(
-        "idssis",
-        $promo['adminID'],
-        $promo['discountRate'],
-        $promo['startDate'],
-        $promo['expireDate'],
-        $promo['promotionQuantity'],
-        $promo['promotionType']
-    );
-    $stmt->execute();
-    $stmt->close();
-}
+    // Insert trips
+    foreach ($jsonData['trips'] as $trip) {
+        $stmt = $conn->prepare("INSERT INTO trip (tripDate, tripTime, origin, destination, totalAmount, tripStatus, maxSeats, availableSeats) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param(
+            "ssssdsii",
+            $trip['tripDate'],
+            $trip['tripTime'],
+            $trip['origin'],
+            $trip['destination'],
+            $trip['totalAmount'],
+            $trip['tripStatus'],
+            $trip['maxSeats'],
+            $trip['availableSeats']
+        );
+        $stmt->execute();
+        $stmt->close();
+    }
 
-foreach ($dummyTrips as $trip) {
-    $stmt = $conn->prepare("INSERT INTO trip (tripDate, tripTime, origin, destination, totalAmount, tripStatus, maxSeats, availableSeats) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param(
-        "ssssdsii",
-        $trip['tripDate'],
-        $trip['tripTime'],
-        $trip['origin'],
-        $trip['destination'],
-        $trip['totalAmount'],
-        $trip['tripStatus'],
-        $trip['maxSeats'],
-        $trip['availableSeats']
-    );
-    $stmt->execute();
-    $stmt->close();
-}
+    // Insert accounts
+    foreach ($jsonData['accounts'] as $account) {
+        $stmt = $conn->prepare("INSERT INTO account (accountName, phoneNumber, password, email, accountBalance, accountStatus, accountVerifyStatus) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $hashedPassword = password_hash($account['password'], PASSWORD_DEFAULT);
+        $stmt->bind_param(
+            "ssssdss",
+            $account['accountName'],
+            $account['phoneNumber'],
+            $hashedPassword,
+            $account['email'],
+            $account['accountBalance'],
+            $account['accountStatus'],
+            $account['accountVerifyStatus']
+        );
+        $stmt->execute();
+        $stmt->close();
+    }
 
-// For accounts, you'll need to hash the passwords before inserting
-foreach ($accountData as $account) {
-    $stmt = $conn->prepare("INSERT INTO account (accountName, phoneNumber, password, email, accountBalance, accountStatus, accountVerifyStatus) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $hashedPassword = password_hash($account['password'], PASSWORD_DEFAULT);
-    $stmt->bind_param(
-        "ssssdss",
-        $account['accountName'],
-        $account['phoneNumber'],
-        $hashedPassword,
-        $account['email'],
-        $account['accountBalance'],
-        $account['accountStatus'],
-        $account['accountVerifyStatus']
-    );
-    $stmt->execute();
-    $stmt->close();
-}
+    // Insert sales
+    foreach ($jsonData['sales'] as $sale) {
+        $stmt = $conn->prepare("INSERT INTO sale (accountID, promotionID, redemptionID, saleDate, saleTime, lineOfSaleQuantity, lineOfSaleAmount, totalAmountPay, saleStatus) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param(
+            "iiissddds",
+            $sale['accountID'],
+            $sale['promotionID'],
+            $sale['redemptionID'],
+            $sale['saleDate'],
+            $sale['saleTime'],
+            $sale['lineOfSaleQuantity'],
+            $sale['lineOfSaleAmount'],
+            $sale['totalAmountPay'],
+            $sale['saleStatus']
+        );
+        $stmt->execute();
+        $stmt->close();
+    }
 
-// Insert sales data
-$salesData = $jsonData['sales'];
-foreach ($salesData as $sale) {
-    $promotionID = $sale['promotionID'] ?? null;
-    $redemptionID = $sale['redemptionID'] ?? null;
-    
-    $stmt = $conn->prepare("INSERT INTO sale (accountID, promotionID, redemptionID, saleDate, saleTime, lineOfSaleQuantity, lineOfSaleAmount, totalAmountPay, saleStatus) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param(
-        "iiissddds",
-        $sale['accountID'],
-        $promotionID,
-        $redemptionID,
-        $sale['saleDate'],
-        $sale['saleTime'],
-        $sale['lineOfSaleQuantity'],
-        $sale['lineOfSaleAmount'],
-        $sale['totalAmountPay'],
-        $sale['saleStatus']
-    );
-    $stmt->execute();
-    $stmt->close();
-}
+    // Insert trip bookings
+    foreach ($jsonData['trip_bookings'] as $booking) {
+        $stmt = $conn->prepare("INSERT INTO trip_booking (saleID, tripID, accountID, bookingStatus, originalTripID, rescheduledTripID, bookingDate, refundAmount, refundDate, refundTime, originalBookingID) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param(
+            "iiisssdsdsi",
+            $booking['saleID'],
+            $booking['tripID'],
+            $booking['accountID'],
+            $booking['bookingStatus'],
+            $booking['originalTripID'],
+            $booking['rescheduledTripID'],
+            $booking['bookingDate'],
+            $booking['refundAmount'],
+            $booking['refundDate'],
+            $booking['refundTime'],
+            $booking['originalBookingID']
+        );
+        $stmt->execute();
+        $stmt->close();
+    }
 
-// Insert trip bookings
-$tripBookings = $jsonData['trip_bookings'];
-foreach ($tripBookings as $booking) {
-    $originalTripID = $booking['originalTripID'] ?? null;
-    $rescheduledTripID = $booking['rescheduledTripID'] ?? null;
-    $refundDate = $booking['refundDate'] ?? null;
-    $refundTime = $booking['refundTime'] ?? null;
-    $originalBookingID = $booking['originalBookingID'] ?? null;
-    
-    $stmt = $conn->prepare("INSERT INTO trip_booking (saleID, tripID, accountID, bookingStatus, originalTripID, rescheduledTripID, bookingDate, refundAmount, refundDate, refundTime, originalBookingID) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param(
-        "iiisssdsdsi",
-        $booking['saleID'],
-        $booking['tripID'],
-        $booking['accountID'],
-        $booking['bookingStatus'],
-        $originalTripID,
-        $rescheduledTripID,
-        $booking['bookingDate'],
-        $booking['refundAmount'],
-        $refundDate,
-        $refundTime,
-        $originalBookingID
-    );
-    $stmt->execute();
-    $stmt->close();
-}
+    // Insert line of sales
+    foreach ($jsonData['line_of_sales'] as $line) {
+        $stmt = $conn->prepare("INSERT INTO line_of_sale (saleID, type, tripID, merchandiseID, itemQuantity, itemAmount, totalAmountPerLineOfSale) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param(
+            "isiiidd",
+            $line['saleID'],
+            $line['type'],
+            $line['tripID'],
+            $line['merchandiseID'],
+            $line['itemQuantity'],
+            $line['itemAmount'],
+            $line['totalAmountPerLineOfSale']
+        );
+        $stmt->execute();
+        $stmt->close();
+    }
 
-// Update trip available seats
-foreach ($tripBookings as $booking) {
-    $stmt = $conn->prepare("UPDATE trip SET availableSeats = availableSeats - 1 WHERE tripID = ?");
-    $stmt->bind_param("i", $booking['tripID']);
-    $stmt->execute();
-    $stmt->close();
-}
-
-// Insert line of sales
-$lineOfSales = $jsonData['line_of_sales'];
-foreach ($lineOfSales as $line) {
-    $merchandiseID = $line['merchandiseID'] ?? null;
-    
-    $stmt = $conn->prepare("INSERT INTO line_of_sale (saleID, type, tripID, merchandiseID, itemQuantity, itemAmount, totalAmountPerLineOfSale) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param(
-        "isiiidd",
-        $line['saleID'],
-        $line['type'],
-        $line['tripID'],
-        $merchandiseID,
-        $line['itemQuantity'],
-        $line['itemAmount'],
-        $line['totalAmountPerLineOfSale']
-    );
-    $stmt->execute();
-    $stmt->close();
-}
-
-// Insert feedback data
-$feedbacks = $jsonData['feedbacks'];
-foreach ($feedbacks as $feedback) {
-    $adminID = $feedback['adminID'] ?? null;
-    
-    $stmt = $conn->prepare("INSERT INTO feedback (accountID, adminID, rating, comment, feedbackStatus) 
-                           VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param(
-        "iiiss",
-        $feedback['accountID'],
-        $adminID,
-        $feedback['rating'],
-        $feedback['comment'],
-        $feedback['feedbackStatus']
-    );
-    $stmt->execute();
-    $stmt->close();
+    // Insert feedbacks
+    foreach ($jsonData['feedbacks'] as $feedback) {
+        $stmt = $conn->prepare("INSERT INTO feedback (accountID, adminID, rating, comment, feedbackStatus) 
+                               VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param(
+            "iiiss",
+            $feedback['accountID'],
+            $feedback['adminID'],
+            $feedback['rating'],
+            $feedback['comment'],
+            $feedback['feedbackStatus']
+        );
+        $stmt->execute();
+        $stmt->close();
+    }
+} else {
+    $conn->close();
+    exit;
 }
 
 $conn->close();
-echo "Setup complete.";
+// No echo, no die, no output
 ?>
