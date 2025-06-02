@@ -1,28 +1,93 @@
 # SWE30003-SOFTWARE-ARCHITECTURE-AND-DESIGN
-SWE30003 SOFTWARE ARCHITECTURE AND DESIGN
+# Kuching ART Website (Group_21 A3)
 
-Welcome to the GitHub repo for Group 21, in this repo will show previous assignments done by group 21.
+A web-based management and booking system for the Kuching Autonomous Rapid Transit (ART), built with PHP (OOP), MySQL, and Bootstrap.
 
-Here is a list of assignment:
-1. Assignment 1 SRS
-2. Assignemnt 2 Object-oriented Design (Part 1)
-3. Assignment 3 Object-oriented Design (Part 2)
+---
 
-We also have a mini program in software_application
-To run the program you need to have the following setup:
-1. Download GitHub Desktop https://desktop.github.com/download/
-2. Clone the github repo into **xampp/htdocs** folder
-![image](https://github.com/user-attachments/assets/ecedd88d-f489-4527-93bb-eb3b81ed225d)
+## 🚀 Features
 
-![image](https://github.com/user-attachments/assets/3236b384-2482-4097-bb18-3eccc172bdcb)
+- User and Admin authentication
+- Trip booking and management
+- Merchandise and promotion management
+- Points and rewards system
+- Feedback and notification modules
+- Modern, responsive UI
 
-3. Start xampp **apache** and **mysql**
-![image](https://github.com/user-attachments/assets/938afd3e-4d1a-4433-8f2c-81755c30a0f0)
+---
 
-4. Open the github repo folder into your workspace (visual studio code or cursor) https://www.cursor.com/cn/downloads
+## 🛠️ Getting Started
 
-5. First open the **setup_database.php** in the browser
-![image](https://github.com/user-attachments/assets/2ad394d2-95a1-408a-a1da-ad323d40950f)
+### Prerequisites
 
-6. Then you can start to play around the program
-![image](https://github.com/user-attachments/assets/2be4c592-babe-4968-a50c-d43b6f5d22de)
+- [XAMPP](https://www.apachefriends.org/) or any LAMP/WAMP stack with PHP 8+ and MySQL
+- Composer (optional, if you want to manage dependencies)
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/K3NN3TH-KUAN/SWE30003-SOFTWARE-ARCHITECTURE-AND-DESIGN.git
+   ```
+
+2. **Move the project to your web server root:**
+   - For XAMPP, place the project folder in `C:/xampp/htdocs/`
+
+3. **Start Apache and MySQL** from your XAMPP control panel.
+
+4. **Database Setup:**
+   - The database and tables will be created automatically when you first visit the login page (`/software_application/pages/login.php`).
+   - Dummy data will be loaded from `software_application/dummy_data.json`.
+
+5. **Access the application:**
+   - Open your browser and go to:  
+     `http://localhost/SWE30003-SOFTWARE-ARCHITECTURE-AND-DESIGN/software_application/pages/login.php`
+
+---
+
+## 👤 Default Accounts
+
+### Admins
+- **Email:** `kenneth@example.com`  
+  **Password:** `admin`
+- (See `dummy_data.json` for more admin accounts)
+
+### Users
+- **Email:** `john.smith@email.com`  
+  **Password:** `password123`
+- (See `dummy_data.json` for more user accounts)
+
+---
+
+## 🛑 Stopping the Project
+
+1. **Log out** from the application.
+2. **Stop Apache and MySQL** from your XAMPP control panel.
+
+---
+
+## 📁 Project Structure
+```
+software_application/
+├── classes/ # PHP OOP classes (Account, Admin, Trip, etc.)
+├── pages/ # All PHP pages (UI, logic, controllers)
+├── dummy_data.json # Dummy data for initial database setup
+├── setup_database.php # Script to create DB schema and load dummy data
+├── uploads/ # Uploaded files (e.g., identity documents)
+└── ... # Other supporting files
+```
+
+---
+
+## 📝 Notes
+
+- If you want to reset the database, delete the `software_app_db` database from phpMyAdmin or MySQL, then reload the login page.
+- All uploads (e.g., identity documents) are stored in the `uploads/` folder.
+
+---
+
+## 📢 License
+
+This project is for academic purposes (SWE30003 Software Architecture and Design, Group 21).
+
+---
