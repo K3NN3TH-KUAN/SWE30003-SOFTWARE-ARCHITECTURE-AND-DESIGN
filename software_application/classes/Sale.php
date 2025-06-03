@@ -1,4 +1,7 @@
 <?php
+/**
+ * Class for handling sales transactions.
+ */
 class Sale {
     public $saleID;
     public $accountID;
@@ -10,6 +13,16 @@ class Sale {
     public $totalAmountPay;
     public $saleStatus;
 
+    /**
+     * Initiates a new sale with the provided details.
+     * @param int $accountID
+     * @param float $lineOfSaleAmount
+     * @param int $lineOfSaleQuantity
+     * @param float $totalAmountPay
+     * @param int|null $promotionID
+     * @param int|null $redemptionID
+     * @return int|false Sale ID on success, false on failure.
+     */
     public function initiateNewSale($accountID, $lineOfSaleAmount, $lineOfSaleQuantity, $totalAmountPay, $promotionID = null, $redemptionID = null) {
         require_once __DIR__ . '/Database.php';
         $database = new Database();
@@ -59,6 +72,11 @@ class Sale {
         }
     }
     
+    /**
+     * Generates a receipt for a sale.
+     * @param int $saleID
+     * @return string HTML receipt
+     */
     public function generateReceipt($saleID) {
         require_once __DIR__ . '/Database.php';
         require_once __DIR__ . '/LineOfSale.php';
@@ -157,13 +175,33 @@ class Sale {
         <?php
         return ob_get_clean();
     }
+    /**
+     * Shows the total amount for the sale (implementation needed).
+     */
     public function showTotalAmount() {}
+    /**
+     * Activates a promotion for the sale (implementation needed).
+     */
     public function activatePromotion() {}
+    /**
+     * Checks out a promotion for the sale (implementation needed).
+     */
     public function checkoutPromotion() {}
+    /**
+     * Earns reward points for the sale (implementation needed).
+     */
     public function earnRewardPoint() {}
+    /**
+     * Handles line of sale items for the sale (implementation needed).
+     */
     public function handleLineOfSale() {}
 
-    // Add a method to update sale status if needed
+    /**
+     * Updates the status of a sale.
+     * @param int $saleID
+     * @param string $status
+     * @return bool
+     */
     public function updateSaleStatus($saleID, $status) {
         require_once __DIR__ . '/Database.php';
         $database = new Database();
@@ -173,6 +211,11 @@ class Sale {
         return $stmt->execute([$status, $saleID]);
     }
 
+    /**
+     * Deletes a sale by its ID.
+     * @param int $saleID
+     * @return bool
+     */
     public function deleteSale($saleID) {
         require_once __DIR__ . '/Database.php';
         $database = new Database();
@@ -182,6 +225,11 @@ class Sale {
         return $stmt->execute([$saleID]);
     }
 
+    /**
+     * Gets sale details by sale ID.
+     * @param int $saleID
+     * @return array|false
+     */
     public function getSaleByID($saleID) {
         require_once __DIR__ . '/Database.php';
         $database = new Database();
@@ -193,6 +241,11 @@ class Sale {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Gets all sales for a specific account.
+     * @param int $accountID
+     * @return array
+     */
     public function getSalesByAccountID($accountID) {
         require_once __DIR__ . '/Database.php';
         $database = new Database();
@@ -204,6 +257,12 @@ class Sale {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Emails a receipt for a sale to the specified email address.
+     * @param int $saleID
+     * @param string $toEmail
+     * @return bool
+     */
     public function emailReceipt($saleID, $toEmail) {
         $receiptHtml = $this->generateReceipt($saleID);
         $subject = "Your Kuching ART Purchase Receipt #$saleID";

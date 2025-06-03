@@ -3,6 +3,9 @@ require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/Notification.php';
 require_once __DIR__ . '/LineOfSale.php';
 
+/**
+ * Class for handling trip management and booking.
+ */
 class Trip {
     private $tripID;
     private $origin;
@@ -15,6 +18,11 @@ class Trip {
     private $availableSeats;
     private $tripGroupID;
 
+    /**
+     * Gets trip details by trip ID.
+     * @param int $tripID
+     * @return array|false
+     */
     public function getTripByID($tripID) {
         $database = new Database();
         $db = $database->getConnection();
@@ -28,6 +36,12 @@ class Trip {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Gets all trips by date and time.
+     * @param string $date
+     * @param string $time
+     * @return array
+     */
     public function getTripsByDateAndTime($date, $time) {
         $database = new Database();
         $db = $database->getConnection();
@@ -40,6 +54,17 @@ class Trip {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Creates a new trip record.
+     * @param string $origin
+     * @param string $destination
+     * @param string $tripDate
+     * @param string $tripTime
+     * @param float $totalAmount
+     * @param int $maxSeats
+     * @param int|null $tripGroupID
+     * @return bool
+     */
     public function createNewTrip($origin, $destination, $tripDate, $tripTime, $totalAmount, $maxSeats, $tripGroupID = null) {
         $database = new Database();
         $db = $database->getConnection();
@@ -59,6 +84,12 @@ class Trip {
         return $stmt->execute();
     }
 
+    /**
+     * Updates the status of a trip.
+     * @param int $tripID
+     * @param string $status
+     * @return bool
+     */
     public function updateTripStatus($tripID, $status) {
         $database = new Database();
         $db = $database->getConnection();
@@ -70,6 +101,12 @@ class Trip {
         return $stmt->execute();
     }
 
+    /**
+     * Updates the available seats for a trip after booking.
+     * @param int $tripID
+     * @param int $seatsToBook
+     * @return bool
+     */
     public function updateAvailableSeats($tripID, $seatsToBook) {
         $database = new Database();
         $db = $database->getConnection();
@@ -94,6 +131,9 @@ class Trip {
         return false;
     }
 
+    /**
+     * Reschedules a trip to a new date and time.
+     */
     public function rescheduleTrip($tripID, $newDate, $newTime) {
         $database = new Database();
         $db = $database->getConnection();
@@ -107,6 +147,11 @@ class Trip {
         return $stmt->execute();
     }
 
+    /**
+     * Cancels a trip by setting its status to 'Cancelled'.
+     * @param int $tripID
+     * @return bool
+     */
     public function cancelTrip($tripID) {
         $database = new Database();
         $db = $database->getConnection();
@@ -117,6 +162,11 @@ class Trip {
         return $stmt->execute();
     }
         
+    /**
+     * Creates a group of trips as a batch operation.
+     * @param array $trips Array of trip data arrays.
+     * @return bool
+     */
     public function createTripGroup($trips) {
         $database = new Database();
         $db = $database->getConnection();
@@ -146,6 +196,11 @@ class Trip {
         }
     }
 
+    /**
+     * Gets all purchasers for a specific trip.
+     * @param int $tripID
+     * @return array
+     */
     public function getTripPurchasers($tripID) {
         $database = new Database();
         $db = $database->getConnection();
@@ -172,6 +227,11 @@ class Trip {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Gets a sales summary for a specific trip.
+     * @param int $tripID
+     * @return array
+     */
     public function getTripSalesSummary($tripID) {
         $database = new Database();
         $db = $database->getConnection();
@@ -240,6 +300,9 @@ class Trip {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Creates a new booking for a trip.
+     */
     public function createBooking($saleID, $tripID, $accountID) {
         $database = new Database();
         $db = $database->getConnection();
@@ -254,6 +317,9 @@ class Trip {
         return $stmt->execute();
     }
 
+    /**
+     * Reschedules an existing booking to a new trip.
+     */
     public function rescheduleBooking($bookingID, $newTripID) {
         $database = new Database();
         $db = $database->getConnection();
@@ -323,6 +389,9 @@ class Trip {
         }
     }
 
+    /**
+     * Gets detailed information about a booking.
+     */
     public function getBookingDetails($bookingID) {
         $database = new Database();
         $db = $database->getConnection();
@@ -344,6 +413,11 @@ class Trip {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Gets all bookings for a user.
+     * @param int $accountID
+     * @return array
+     */
     public function getUserBookings($accountID) {
         $database = new Database();
         $db = $database->getConnection();
@@ -360,6 +434,11 @@ class Trip {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Gets a booking by its sale ID.
+     * @param int $saleID
+     * @return array|false
+     */
     public function getBookingBySaleID($saleID) {
         $database = new Database();
         $db = $database->getConnection();
@@ -375,6 +454,9 @@ class Trip {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Cancels a booking, processes refund, and updates seat availability.
+     */
     public function cancelBooking($bookingID) {
         $database = new Database();
         $db = $database->getConnection();
@@ -470,6 +552,13 @@ class Trip {
         }
     }
 
+    /**
+     * Gets the total amount for a trip in a sale (private helper).
+     * @param PDO $db
+     * @param int $saleID
+     * @param int $tripID
+     * @return float
+     */
     private function getTripAmountForSale($db, $saleID, $tripID) {
         $sql = "SELECT COALESCE(SUM(totalAmountPerLineOfSale), 0) as amount 
                 FROM line_of_sale 
@@ -484,6 +573,13 @@ class Trip {
         return $result['amount'] ?? 0;
     }
 
+    /**
+     * Gets the number of seats booked for a trip in a sale (private helper).
+     * @param PDO $db
+     * @param int $saleID
+     * @param int $tripID
+     * @return int
+     */
     private function getTripSeatsForSale($db, $saleID, $tripID) {
         $sql = "SELECT COALESCE(SUM(itemQuantity), 0) as seats 
                 FROM line_of_sale 
@@ -498,6 +594,11 @@ class Trip {
         return $result['seats'] ?? 0;
     }
 
+    /**
+     * Gets the number of seats booked for a booking (private helper).
+     * @param int $bookingID
+     * @return int
+     */
     private function getSeatsBookedForBooking($bookingID) {
         $database = new Database();
         $db = $database->getConnection();
@@ -513,6 +614,11 @@ class Trip {
         return $result['seats'] ?? 0;
     }
 
+    /**
+     * Gets all available trips for rescheduling, excluding the current trip.
+     * @param int $currentTripID
+     * @return array
+     */
     public function getAvailableTripsForReschedule($currentTripID) {
         $database = new Database();
         $db = $database->getConnection();

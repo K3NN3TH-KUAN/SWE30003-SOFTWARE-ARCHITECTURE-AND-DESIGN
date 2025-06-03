@@ -6,6 +6,11 @@ class Database {
     private $password = "";
     private $conn;
 
+    /**
+     * Returns a PDO connection to the application's database.
+     * 
+     * @return PDO|null The PDO connection object or null on failure.
+     */
     public function getConnection() {
         $this->conn = null;
         try {
@@ -21,7 +26,11 @@ class Database {
         return $this->conn;
     }
 
-    // New method to connect without selecting a database
+    /**
+     * Returns a PDO connection to the MySQL server without selecting a database.
+     * 
+     * @return PDO|null The PDO connection object or null on failure.
+     */
     public function getConnectionWithoutDB() {
         $this->conn = null;
         try {
@@ -37,7 +46,9 @@ class Database {
         return $this->conn;
     }
 
-    // Add this method to close connection
+    /**
+     * Closes the current database connection.
+     */
     public function closeConnection() {
         $this->conn = null;
     }

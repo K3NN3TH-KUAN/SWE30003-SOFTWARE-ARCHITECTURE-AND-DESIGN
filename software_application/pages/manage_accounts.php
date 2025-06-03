@@ -53,13 +53,42 @@ if (isset($_POST['edit_account'])) {
 // Handle Delete Account
 if (isset($_POST['delete_account'])) {
     $id = $_POST['accountID'];
+
     // Delete related notifications
     $stmt = $db->prepare("DELETE FROM notification WHERE accountID=?");
     $stmt->execute([$id]);
-    // Delete related feedback (if you have a feedback table)
+    // Delete related feedback
     $stmt = $db->prepare("DELETE FROM feedback WHERE accountID=?");
     $stmt->execute([$id]);
-    // Add similar lines for other related tables if needed
+    // Delete related points
+    $stmt = $db->prepare("DELETE FROM point WHERE accountID=?");
+    $stmt->execute([$id]);
+    // Delete related topups
+    $stmt = $db->prepare("DELETE FROM topup WHERE accountID=?");
+    $stmt->execute([$id]);
+    // Delete related point redemptions
+    $stmt = $db->prepare("DELETE FROM point_redemption WHERE accountID=?");
+    $stmt->execute([$id]);
+    // Delete related trip bookings
+    $stmt = $db->prepare("DELETE FROM trip_booking WHERE accountID=?");
+    $stmt->execute([$id]);
+
+    // --- NEW: Delete line_of_sale records for all sales by this account ---
+    // 1. Get all saleIDs for this account
+    $stmt = $db->prepare("SELECT saleID FROM sale WHERE accountID=?");
+    $stmt->execute([$id]);
+    $saleIDs = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    // 2. Delete all line_of_sale records for these saleIDs
+    if (!empty($saleIDs)) {
+        $in = str_repeat('?,', count($saleIDs) - 1) . '?';
+        $stmt = $db->prepare("DELETE FROM line_of_sale WHERE saleID IN ($in)");
+        $stmt->execute($saleIDs);
+    }
+
+    // 3. Delete related sales
+    $stmt = $db->prepare("DELETE FROM sale WHERE accountID=?");
+    $stmt->execute([$id]);
 
     // Now delete the account
     $stmt = $db->prepare("DELETE FROM account WHERE accountID=?");

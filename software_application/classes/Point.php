@@ -14,11 +14,34 @@ class Point {
         $this->conn = $database->getConnection();
     }
 
+    /**
+     * Creates a new point record (implementation needed).
+     */
     public function createPoint() {}
+
+    /**
+     * Retrieves the point balance for the account (implementation needed).
+     */
     public function retrievePointBalance() {}
+
+    /**
+     * Updates the account's point balance (implementation needed).
+     */
     public function updateAccountPointBalance() {}
+
+    /**
+     * Displays the point balance (implementation needed).
+     */
     public function displayPointBalance() {}
+
+    /**
+     * Validates if the account has enough points (implementation needed).
+     */
     public function validatePointBalance() {}
+
+    /**
+     * Checks if the account has enough points for redemption.
+     */
     public function validatePointRedemption($accountID, $requiredPoints) {
         $pointInfo = $this->getPointByAccountID($accountID);
         if ($pointInfo && $pointInfo['pointBalance'] >= $requiredPoints) {
@@ -26,9 +49,25 @@ class Point {
         }
         return false;
     }
+
+    /**
+     * Verifies the type of reward for redemption (implementation needed).
+     */
     public function verifyRewardType() {}
+
+    /**
+     * Redeems a promotion voucher using points (implementation needed).
+     */
     public function redeemPromotionVoucher() {}
+
+    /**
+     * Redeems merchandise using points (implementation needed).
+     */
     public function redeemMerchandise() {}
+
+    /**
+     * Gets the point record for a specific account.
+     */
     public function getPointByAccountID($accountID) {
         try {
             $sql = "SELECT * FROM point WHERE accountID = ?";
@@ -40,6 +79,10 @@ class Point {
             return false;
         }
     }
+
+    /**
+     * Updates the point balance and total earned for an account.
+     */
     public function updatePointBalance($accountID, $newBalance, $newTotalEarned) {
         try {
             $this->conn->beginTransaction();
@@ -77,6 +120,10 @@ class Point {
             return false;
         }
     }
+
+    /**
+     * Creates a new point record for an account.
+     */
     public function createPointRecord($accountID, $initialBalance, $totalEarned, $redeemed) {
         try {
             $this->conn->beginTransaction();
@@ -109,6 +156,10 @@ class Point {
             return false;
         }
     }
+
+    /**
+     * Gets the point history for an account.
+     */
     public function getPointHistory($accountID) {
         try {
             $sql = "SELECT * FROM point WHERE accountID = ? ORDER BY pointID DESC";

@@ -1,4 +1,11 @@
 <?php
+/**
+ * Admin Dashboard Page
+ * 
+ * Displays an overview of system statistics and provides navigation for admin tasks.
+ * Only accessible to logged-in admin users.
+ */
+
 session_start();
 require_once '../classes/Database.php';
 $database = new Database();

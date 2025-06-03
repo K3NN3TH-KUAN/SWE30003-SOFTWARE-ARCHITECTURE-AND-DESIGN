@@ -1,4 +1,10 @@
 <?php
+/**
+ * Admin Login Page
+ * 
+ * Handles admin authentication. Displays a login form and processes login attempts.
+ */
+
 require_once '../classes/Database.php';
 $database = new Database();
 $db = $database->getConnection();

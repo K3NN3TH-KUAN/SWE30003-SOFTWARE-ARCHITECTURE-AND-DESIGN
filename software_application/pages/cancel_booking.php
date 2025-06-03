@@ -1,4 +1,11 @@
 <?php
+/**
+ * Cancel Booking Page
+ * 
+ * Handles the cancellation of a user's trip booking.
+ * Redirects to the booking management page after processing.
+ */
+
 session_start();
 require_once '../classes/Trip.php';
 require_once '../classes/Account.php';

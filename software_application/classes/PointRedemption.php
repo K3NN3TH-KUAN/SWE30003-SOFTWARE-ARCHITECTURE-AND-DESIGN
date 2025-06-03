@@ -2,15 +2,31 @@
 require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/Promotion.php';
 
+/**
+ * Class for handling point redemption logic.
+ */
 class PointRedemption {
     private $conn;
 
+    /**
+     * Constructor. Initializes the database connection.
+     */
     public function __construct() {
         $database = new Database();
         $this->conn = $database->getConnection();
     }
 
-    // Create a new point redemption record
+    /**
+     * Creates a new point redemption record.
+     * @param int $accountID
+     * @param int $itemID
+     * @param string $itemType
+     * @param int $pointsCost
+     * @param int $quantity
+     * @param string $redemptionDate
+     * @param string $redemptionTime
+     * @return bool
+     */
     public function createRedemption($accountID, $itemID, $itemType, $pointsCost, $quantity, $redemptionDate, $redemptionTime) {
         try {
             $sql = "INSERT INTO point_redemption (accountID, itemID, itemType, pointsCost, quantity, redemptionDate, redemptionTime) 
@@ -39,7 +55,11 @@ class PointRedemption {
         }
     }
 
-    // Get all redemptions for an account
+    /**
+     * Gets all redemptions for an account.
+     * @param int $accountID
+     * @return array
+     */
     public function getRedemptionsByAccountID($accountID) {
         try {
             $sql = "SELECT pr.*, p.discountRate, p.expireDate 
@@ -58,7 +78,10 @@ class PointRedemption {
         }
     }
 
-    // Get available items for redemption
+    /**
+     * Gets available items for redemption (promotions and merchandise).
+     * @return array
+     */
     public function getAvailableRedemptionItems() {
         try {
             $items = [];
@@ -95,7 +118,12 @@ class PointRedemption {
         }
     }
 
-    // Check if user has enough points for redemption
+    /**
+     * Checks if the user has enough points for redemption.
+     * @param int $accountID
+     * @param int $pointsCost
+     * @return bool
+     */
     public function canRedeem($accountID, $pointsCost) {
         try {
             $sql = "SELECT pointBalance FROM point WHERE accountID = ?";
@@ -110,12 +138,22 @@ class PointRedemption {
         }
     }
 
+    /**
+     * Marks a redemption as used.
+     * @param int $redemptionID
+     * @return bool
+     */
     public function markAsUsed($redemptionID) {
         $db = (new Database())->getConnection();
         $stmt = $db->prepare("UPDATE point_redemption SET isUsed = 1 WHERE redemptionID = ?");
         return $stmt->execute([$redemptionID]);
     }
 
+    /**
+     * Gets a redemption record by its ID.
+     * @param int $redemptionID
+     * @return array|false
+     */
     public function getRedemptionByID($redemptionID) {
         require_once __DIR__ . '/Database.php';
         $database = new Database();

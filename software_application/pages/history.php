@@ -1,4 +1,5 @@
 <?php
+// Start the session to access user data
 session_start();
 require_once '../classes/Sale.php';
 require_once '../classes/LineOfSale.php';
@@ -8,7 +9,7 @@ require_once '../classes/Database.php';
 $database = new Database();
 $db = $database->getConnection();
 
-
+// Redirect to login if user is not authenticated
 if (!isset($_SESSION['accountID'])) {
     header('Location: login.php');
     exit();

@@ -10,6 +10,9 @@ class Account {
     public $accountStatus; // ENUM('active', 'inactive')
     public $accountVerifyStatus; // ENUM('verified', 'unverified')
 
+    /**
+     * Registers a new account with the provided details.
+     */
     public function registerAccount($accountName, $phoneNumber, $password, $email) {
         require_once __DIR__ . '/Database.php';
         $database = new Database();
@@ -20,6 +23,9 @@ class Account {
         return $stmt->execute([$accountName, $phoneNumber, $hashedPassword, $email]);
     }
     
+    /**
+     * Authenticates a user using their username, email, or phone number and password.
+     */
     public function login($loginInput, $password) {
         require_once __DIR__ . '/Database.php';
         $database = new Database();
@@ -33,10 +39,25 @@ class Account {
         }
         return false;
     }
+    /**
+     * Logs out the current user (implementation needed).
+     */
     public function logout() {}
+    /**
+     * Deactivates the current account (implementation needed).
+     */
     public function deactivateAccount() {}
+    /**
+     * Updates the account details (implementation needed).
+     */
     public function updateAccount() {}
+    /**
+     * Verifies the account (implementation needed).
+     */
     public function verifyAccount() {}
+    /**
+     * Updates the account balance for a given account ID.
+     */
     public function updateAccountBalance($accountID, $newBalance) {
         require_once __DIR__ . '/Database.php';
         $database = new Database();
@@ -46,20 +67,62 @@ class Account {
         return $stmt->execute([$newBalance, $accountID]);
     }
 
+    /**
+     * Updates the account status (implementation needed).
+     */
     public function updateAccountStatus() {}
+    /**
+     * Retrieves the account information (implementation needed).
+     */
     public function viewAccountInfo() {}
+    /**
+     * Views the points for the account (implementation needed).
+     */
     public function viewPoints() {}
+    /**
+     * Views the account's balance history (implementation needed).
+     */
     public function viewAccountBalanceHistory() {}
+    /**
+     * Views the sale history for the account (implementation needed).
+     */
     public function viewSaleHistory() {}
+    /**
+     * Views the ART schedule for the account (implementation needed).
+     */
     public function viewARTSchedule() {}
+    /**
+     * Updates the ART schedule for the account (implementation needed).
+     */
     public function updateARTSchedule() {}
+    /**
+     * Updates the verification status of the account (implementation needed).
+     */
     public function updateVerifyStatus() {}
+    /**
+     * Views the merchandise stock (implementation needed).
+     */
     public function viewMerchandiseStock() {}
+    /**
+     * Requests to redeem a reward (implementation needed).
+     */
     public function requestRedeemReward() {}
+    /**
+     * Selects the type of reward to redeem (implementation needed).
+     */
     public function selectRewardType() {}
+    /**
+     * Records the purchase history for the account (implementation needed).
+     */
     public function recordPurchasedHistory() {}
+    /**
+     * Records the cancellation history for the account (implementation needed).
+     */
     public function recordCancellationHistory() {}
 
+    /**
+     * Retrieves account details by account ID.
+     */
     public function getAccountByID($accountID) {
         require_once __DIR__ . '/Database.php';
         $database = new Database();
@@ -70,6 +133,9 @@ class Account {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Updates the account information for a given account ID.
+     */
     public function updateAccountInfo($accountID, $accountName, $phoneNumber, $email, $password = null) {
         require_once __DIR__ . '/Database.php';
         $database = new Database();
@@ -86,6 +152,9 @@ class Account {
         }
     }
 
+    /**
+     * Uploads an identity document for the account and sets verify status to pending.
+     */
     public function uploadIdentity($accountID, $identityPath) {
         require_once __DIR__ . '/Database.php';
         $database = new Database();
@@ -95,6 +164,9 @@ class Account {
         return $stmt->execute([$identityPath, $accountID]);
     }
 
+    /**
+     * Sets the account verification status to 'verified' for the given account ID.
+     */
     public function verifyAccountStatus($accountID) {
         require_once __DIR__ . '/Database.php';
         $database = new Database();
@@ -104,6 +176,9 @@ class Account {
         return $stmt->execute([$accountID]);
     }
 
+    /**
+     * Gets the current balance for the given account ID.
+     */
     public function getCurrentBalance($accountID) {
         require_once __DIR__ . '/Database.php';
         $database = new Database();

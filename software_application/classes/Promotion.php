@@ -1,4 +1,7 @@
 <?php
+/**
+ * Class for handling promotions and vouchers.
+ */
 class Promotion {
     public $promotionID;
     public $adminID;
@@ -10,19 +13,57 @@ class Promotion {
     public $redeemedBy;
     private $db;
 
+    /**
+     * Constructor. Initializes the database connection.
+     */
     public function __construct($db) {
         $this->db = $db;
     }
 
+    /**
+     * Creates a new promotion (implementation needed).
+     */
     public function createPromotion() {}
+
+    /**
+     * Deletes a promotion (implementation needed).
+     */
     public function deletePromotion() {}
+
+    /**
+     * Updates a promotion (implementation needed).
+     */
     public function updatePromotion() {}
+
+    /**
+     * Applies a promotion to a sale or booking (implementation needed).
+     */
     public function applyPromotion() {}
+
+    /**
+     * Validates a promotion code or details (implementation needed).
+     */
     public function validatePromotion() {}
+
+    /**
+     * Tracks the usage count of a promotion (implementation needed).
+     */
     public function trackUsageCount() {}
+
+    /**
+     * Displays the list of promotions (implementation needed).
+     */
     public function displayPromotionList() {}
+
+    /**
+     * Generates a promotion voucher (implementation needed).
+     */
     public function generatePromotionVoucher() {}
 
+    /**
+     * Gets all promotions of type 'Promotion'.
+     * @return array
+     */
     public function getAllPromotions() {
         try {
             $sql = "SELECT * FROM promotion WHERE promotionType = 'Promotion'";
@@ -35,6 +76,11 @@ class Promotion {
         }
     }
 
+    /**
+     * Gets available promotions, optionally filtered by type.
+     * @param string|null $type
+     * @return array
+     */
     public function getAvailablePromotions($type = null) {
         try {
             $sql = "SELECT * FROM promotion 
@@ -60,6 +106,12 @@ class Promotion {
         }
     }
 
+    /**
+     * Gets redeemed promotions for an account.
+     * @param int $accountID
+     * @param string|null $type
+     * @return array
+     */
     public function getRedeemedPromotionsByAccountID($accountID, $type = null) {
         try {
             $sql = "SELECT p.*, s.saleDate as redeemDate 
@@ -88,6 +140,12 @@ class Promotion {
         }
     }
 
+    /**
+     * Redeems a promotion for a user.
+     * @param int $promotionID
+     * @param int $accountID
+     * @return bool
+     */
     public function redeemPromotion($promotionID, $accountID) {
         try {
             $this->db->beginTransaction();
@@ -122,6 +180,11 @@ class Promotion {
         }
     }
 
+    /**
+     * Gets promotion details by ID.
+     * @param int $promotionID
+     * @return array|false
+     */
     public function getPromotionByID($promotionID) {
         try {
             $sql = "SELECT * FROM promotion WHERE promotionID = ?";
@@ -134,11 +197,20 @@ class Promotion {
         }
     }
 
+    /**
+     * Decrements the quantity of a promotion.
+     * @param int $promotionID
+     */
     public function decrementPromotionQuantity($promotionID) {
         $stmt = $this->db->prepare("UPDATE promotion SET promotionQuantity = promotionQuantity - 1 WHERE promotionID = ? AND promotionQuantity > 0");
         $stmt->execute([$promotionID]);
     }
 
+    /**
+     * Updates the quantity of a promotion.
+     * @param int $promotionID
+     * @return bool
+     */
     public function updatePromotionQuantity($promotionID) {
         try {
             $sql = "UPDATE promotion 
@@ -152,6 +224,11 @@ class Promotion {
         }
     }
 
+    /**
+     * Gets redeemed vouchers for an account.
+     * @param int $accountID
+     * @return array
+     */
     public function getRedeemedVouchers($accountID) {
         try {
             $sql = "SELECT pr.*, p.discountRate, p.expireDate
@@ -172,6 +249,15 @@ class Promotion {
         }
     }
 
+    /**
+     * Processes the redemption of a promotion using points.
+     * @param int $accountID
+     * @param int $promotionID
+     * @param int $pointsCost
+     * @param object $point
+     * @param object $pointRedemption
+     * @return bool
+     */
     public function processRedemption($accountID, $promotionID, $pointsCost, $point, $pointRedemption) {
         try {
             $this->db->beginTransaction();
@@ -218,12 +304,22 @@ class Promotion {
         }
     }
 
+    /**
+     * Decreases the quantity of a promotion.
+     * @param int $promotionID
+     * @return bool
+     */
     public function decreaseQuantity($promotionID) {
         $sql = "UPDATE promotion SET promotionQuantity = promotionQuantity - 1 WHERE promotionID = ? AND promotionQuantity > 0";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([$promotionID]);
     }
 
+    /**
+     * Gets the quantity of a promotion.
+     * @param int $promotionID
+     * @return int
+     */
     public function getPromotionQuantity($promotionID) {
         $sql = "SELECT promotionQuantity FROM promotion WHERE promotionID = ?";
         $stmt = $this->db->prepare($sql);
